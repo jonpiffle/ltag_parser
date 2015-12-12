@@ -1,0 +1,22 @@
+
+JAVAC=@JAVACOMP@
+JAVA=@JAVABIN@
+LEMHOME=@LEMHOME@
+
+install: compile
+	echo "$(JAVA) -classpath :$(PWD) Server" > $(LEMHOME)/bin/xtag.server
+	echo "$(JAVA) -classpath :$(PWD) ServerMain" > $(LEMHOME)/bin/xtag.server.gui
+	chmod 755 $(LEMHOME)/bin/xtag.server
+	chmod 755 $(LEMHOME)/bin/xtag.server.gui
+
+compile:
+	$(JAVAC) *.java
+
+run:
+	$(JAVA) Server
+
+clean:
+	/bin/rm -f *.class
+	/bin/rm -f Makefile
+	@echo "cleaned browser"
+

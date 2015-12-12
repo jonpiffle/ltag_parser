@@ -1,0 +1,105 @@
+
+Using the parser with a generic hand-written grammar: 'lang'
+------------------------------------------------------------
+
+Before running any of the following programs, set env variables
+LEMINPUT and LEMOUTPUT
+
+Also set your PATH variable to include $LEMOUTPUT/bin
+
+e.g. LEMINPUT  /mnt/linc/xtag2/pub/lem/lib/lang
+     LEMOUTPUT /mnt/linc/xtag2/pub/lem
+
+Edit the values and filenames in lang_gram.ph which should be in the
+LEMINPUT directory. 
+
+In the usual case the value for @TREE_FILES will be 'xtag.trees.dat'
+and the value for @FAMILY_FILES will be empty.
+
+Also check that the following values in lang_gram.ph are correctly
+assigned.
+
+    $EPSILON_IN     = "$LEMOUTPUT/lib/$LANG/epsilons.in";
+    $TOPLABELS_IN   = "$LEMOUTPUT/lib/$LANG/toplabels.in";
+    $DEFAULTS_IN    = "$LEMOUTPUT/lib/$LANG/syndefault.in";
+    $SYNFILE        = "$LEMOUTPUT/data/$LANG/syntax.db";
+    $PRJ_SYNFILE    = "\@LEMHOME\@/data/$LANG/syntax.db";
+
+* 'epsilons.in' is the list of empty elements that occur in the trees
+or as anchors of trees.
+
+* 'toplabels.in' is the set of values of the acceptable start symbol
+that should span the entire input string for a successful parse.
+
+* 'syndefault.in' is the syntax entry assigned to out of vocabulary
+words (those not in syntax.flat)
+
+* the values for $SYNFILE and $PRJ_SYNFILE (they should be the same
+filename) is the names of the syntax db file. Instructions for creating
+this file is given below.
+
+Ensure that the file 'treenames.dat' is in the same directory. This
+file should contain the name of each tree aligned with the trees in
+'xtag.trees.dat' one per line.
+
+Optionally you can include the file 'treefeats.dat' which should
+contain feature structures for each tree also aligned one per line
+with 'xtag.trees.dat'
+
+To convert the treebank grammar for use with the parser
+-------------------------------------------------------
+
+% cd $LEMINPUT
+% create_tree_data lang_gram.ph
+
+To create the syntax flat file
+------------------------------
+
+Create in the directory LEMOUTPUT/data/lang/ the file syntax.flat in 
+the following format (one entry per line):
+
+<<INDEX>>bridges<<ENTRY>>bridges<<POS>>N<<TREES>>alphaNXN alphaN betaNn
+
+The treenames should match the ones defined in
+'treenames.dat'. Optionally, the prefix in the treenames such as
+'alpha' and 'beta' can be replaced by Control-B and Control-C
+respectively.
+
+You can also add feature definitions in a file called
+feat_templates.dat in LEMOUTPUT/data/lang/ and assign these defns to
+words in the syntax file:
+
+<<INDEX>>bridges<<ENTRY>>bridges<<POS>>N<<TREES>>alphaNXN alphaN betaNn<<FEATURES>>#N_card- #N_const- #N_decreas- #N_definite- #N_gen- #N_quan- #N_refl- #N.m_3pl
+
+The entries in feat_tempates.dat should look like this:
+
+#N_card-         N.b:<card>=-!
+#N_const- 	 N.b:<const>=-!
+#N.m_3pl 	 N.b:<agr pers>=3, N.b:<agr num>=plur, N.b:<agr 3rdsing>=-!
+
+After creating this 'syntax.flat' file:
+
+% cd LEMOUTPUT/data/lang
+% syn_db_create syntax.flat
+
+The file created: 'syntax.db' should match the value defined in the
+grammar file (see discussion of $SYNFILE and $PRJ_SYNFILE above).
+
+Run the parser
+--------------
+
+The parser can now be used as usual with this grammar. e.g.:
+
+% runparser -g $LEMOUTPUT/data/lang/lang.grammar input > output
+
+If you've not used XTAG conventions (e.g. ^B and ^C in the syntax file)
+then edit the lang.prefs file appropriately. The one included here is
+set for the examples used above.
+
+% runparser -l -o ./lang.prefs -g $LEMOUTPUT/data/lang/lang.grammar input
+
+
+-----------
+Anoop Sarkar
+anoop at linc.cis.upenn.edu
+

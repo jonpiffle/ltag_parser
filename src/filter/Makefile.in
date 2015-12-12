@@ -1,0 +1,18 @@
+
+LEMHOME=@LEMHOME@
+PERLBIN=@PERL@
+TAGGER=@TAGGER@
+
+install:
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" tagger_filter.pl | \
+	  perl -pe "s|\@LEMHOME\@|$(LEMHOME)|g" | \
+	  perl -pe "s|\@TAGGER\@|$(TAGGER)|g" > $(LEMHOME)/bin/tagger_filter
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" simple_filter.pl > $(LEMHOME)/bin/filter
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" no_filter.pl > $(LEMHOME)/bin/no_filter
+	chmod 755 $(LEMHOME)/bin/tagger_filter
+	chmod 755 $(LEMHOME)/bin/filter
+	chmod 755 $(LEMHOME)/bin/no_filter
+
+clean:
+	/bin/rm -f Makefile
+	@echo "cleaned filter"

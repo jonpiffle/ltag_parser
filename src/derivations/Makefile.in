@@ -1,0 +1,29 @@
+
+LEMHOME=@LEMHOME@
+PERLBIN=@PERL@
+
+install:
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" print_deriv.pl > $(LEMHOME)/bin/print_deriv
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" slurp_feats.pl > $(LEMHOME)/bin/slurp_feats.pl
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" extract_first.pl > $(LEMHOME)/bin/extract_first
+	perl -pe "s|\@LEMHOME\@|$(LEMHOME)|g" rundot.sh > $(LEMHOME)/bin/rundot
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" df2dot.pl > $(LEMHOME)/bin/df2dot.pl
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" count_derivations.pl > $(LEMHOME)/bin/count_derivations
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" truncate_graph.pl > $(LEMHOME)/bin/truncate_graph
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" truncate_start.pl > $(LEMHOME)/bin/truncate_start
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" select_deriv.pl > select_deriv
+	perl -pe "s|\@PERLBIN\@|$(PERLBIN)|g" remove_redundancy.pl > remove_redundancy
+	chmod 755 $(LEMHOME)/bin/print_deriv
+	chmod 755 $(LEMHOME)/bin/slurp_feats.pl
+	chmod 755 $(LEMHOME)/bin/extract_first
+	chmod 755 $(LEMHOME)/bin/rundot
+	chmod 755 $(LEMHOME)/bin/df2dot.pl
+	chmod 755 $(LEMHOME)/bin/count_derivations
+	chmod 755 $(LEMHOME)/bin/truncate_graph
+	chmod 755 $(LEMHOME)/bin/truncate_start
+	chmod 755 select_deriv
+	chmod 755 remove_redundancy
+
+clean:
+	/bin/rm -f Makefile
+	@echo "cleaned derivations"

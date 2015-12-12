@@ -1,0 +1,25 @@
+
+JAVAC=@JAVACOMP@
+JAVA=@JAVABIN@
+LEMHOME=@LEMHOME@
+
+install: compile
+	echo "$(JAVA) -classpath :$(PWD) ShowTrees" > $(LEMHOME)/bin/xtag.browser
+	chmod 755 $(LEMHOME)/bin/xtag.browser
+
+compile:
+	$(JAVAC) *.java
+
+run:
+	$(JAVA) ShowTrees
+
+clean:
+	/bin/rm -f *.class
+	@echo "cleaned browser"
+
+newversion: clean
+	/bin/rm -f *.java
+	/bin/cp -f /mnt/linc/xtag/work/moses/browser/*.java .
+	/bin/cp -f /mnt/linc/xtag/work/moses/browser/RCS/* ./RCS
+	/bin/rm -f Makefile
+

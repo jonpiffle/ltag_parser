@@ -1,0 +1,8 @@
+sent="the man who killed John cried"
+0 the DT D betaDnx -12.00
+1 man NN N alphaNXN -12.00
+2 who NN N alphaNXN -12.00
+3 killed VB V betaN0nx0Vnx1 -12.00
+4 John NNP N alphaNXN -12.00
+5 cried VBZ V alphanx0V -12.00
+end

@@ -1,0 +1,4 @@
+# clean-xtag /mnt/linc/xtag2/anoop/lem/data/treenames.dat /mnt/linc/xtag2/anoop/lem/data/treefeats.dat
+
+paste $1 $2 | sed -e 's/	#*/	/g;s/ = /=/g;s/#/, /g;s/$/ \!/' | sort
+

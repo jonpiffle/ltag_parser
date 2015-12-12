@@ -1,0 +1,8 @@
+sent="the man called me up yesterday"
+0 the DT D betaDnx -12.00
+1 man NN N alphaNXN -12.00
+2 called VB V alphanx0Vnx1pl -12.00
+3 me NN N alphaNXN -12.00
+4 up PRT PL alphanx0Vnx1pl -12.00
+5 yesterday NN N betavxN -12.00
+end

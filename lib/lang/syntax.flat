@@ -1,0 +1,12 @@
+<<INDEX>>the<<ENTRY>>the<<POS>>D<<TREES>>alphaD<<FEATURES>>#D_definite+ #D_quan- #D_card- #D_gen- #D_wh- #D_decreas- #D_const+ #D_3 #D_compl-
+<<INDEX>>the<<ENTRY>>the<<POS>>D<<TREES>>betaDnx<<FEATURES>>#D_definite+ #D_quan- #D_card- #D_gen- #D_wh- #D_decreas- #D_const+ #D_3 #D_compl- #NXf_card+ #NXf_3
+<<INDEX>>the<<ENTRY>>the<<POS>>D<<TREES>>betaDnx<<FEATURES>>#D_definite+ #D_quan- #D_card- #D_gen- #D_wh- #D_decreas- #D_const+ #D_3 #D_compl- #NXf_definite- #NXf_quan+ #NXf_wh- #NXf_decreas+ #NXf_const- #NXf_3
+<<INDEX>>the<<ENTRY>>the<<POS>>D<<TREES>>betaDnx<<FEATURES>>#D_definite+ #D_quan- #D_card- #D_gen- #D_wh- #D_decreas- #D_const+ #D_3 #D_compl- #NXf_definite- #NXf_quan+ #NXf_wh- #NXf_decreas- #NXf_const- #NXf_3 #NXf_compl+
+<<INDEX>>the<<ENTRY>>the<<POS>>D<<TREES>>betaDnx<<FEATURES>>#D_definite+ #D_quan- #D_card- #D_gen- #D_wh- #D_decreas- #D_const+ #D_3 #D_compl- #NXf_definite- #NXf_quan- #NXf_card- #NXf_gen- #NXf_wh- #NXf_decreas- #NXf_const- #NXf_3 #NXf_compl-
+<<INDEX>>the<<ENTRY>>the<<POS>>D<<TREES>>betaDnx<<FEATURES>>#D_definite+ #D_quan- #D_card- #D_gen- #D_wh- #D_decreas- #D_const+ #D_3 #D_compl- #NXf_wh- #NXf_decreas- #NXf_const- #NXf_gen- #NXf_definite+ #NXf_card- #NXf_quan- #NXf_compl-
+<<INDEX>>man<<ENTRY>>man<<POS>>N<<TREES>>alphaNXN alphaN betaNn<<FEATURES>>#N_card- #N_const- #N_decreas- #N_definite- #N_gen- #N_quan- #N_refl- #N.m_3sg
+<<INDEX>>man<<ENTRY>>man<<POS>>V<<TREES>>alphanx1V-PRO<<FEATURES>>#N_card- #N_const- #N_decreas- #N_definite- #N_gen- #N_quan- #N_refl- #N.m_3sg
+<<INDEX>>man<<ENTRY>>man<<POS>>N<<TREES>>alphaN betaNn alphaNXN<<FEATURES>>#N.m_3sg #N.m_WH- #N.m_refl- #N.m_decreas- #N.m_GEN- #N.m_quan-
+<<INDEX>>who<<ENTRY>>who<<POS>>N<<TREES>>alphaNXN<<FEATURES>>#N_PRON #N_card- #N_const- #N_decreas- #N_definite+ #N_gen- #N_quan- #N_refl- #N.m_3sg #N.m_wh
+<<INDEX>>Mary<<ENTRY>>Mary<<POS>>N<<TREES>>alphaN betaNn alphaNXN<<FEATURES>>#N.m_3sg #N.m_WH- #N.m_refl- #N.m_decreas- #N.m_definite+ #N.m_GEN- #N.m_quan-
+<<INDEX>>saw<<ENTRY>>saw<<POS>>V<<TREES>>alphanx0Vnx1 betaN1nx0Vnx1 betaN0nx0Vnx1<<FEATURES>>#VP_inf #V_ppart #V.m_PAST #V.m_STR

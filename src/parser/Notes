@@ -1,0 +1,224 @@
+
+Notes file for LEMHOME/src/parser/
+----------------------------------
+Anoop <anoop at linc.cis.upenn.edu>
+
+Parser improvements
+-------------------
+
+* Make the install and runtime scripts independent of either bash or
+  tcsh. Use only perl and don't use LEMHOME anymore. use PREFIX instead
+
+  install notes:
+
+  Berkeley DB :- char *db_version (int *major, int *minor, int *patch)
+
+  Tcl/Tk :- $tk_version
+
+* Implementing an agenda mechanism:
+
+  foreach new state:
+    check chart to see if it exists
+    add to agenda
+    
+  foreach item in agenda:
+    add to chart
+    process with closure functions
+
+* Additions to the grammar file:
+  - toplabels.dat :- all TOP category labels, currently hard-coded
+                     which includes the feature structure for the
+                     top label
+  - defaults.dat  :- the default syn entry, currently hard-coded 
+  (DONE)
+
+* ifdefs to remove
+  - POSTAG_DICT :- this can be removed by moving completely to NBEST_INPUT
+    (DONE)
+  - USE_NBEST_INPUT :- make this the standard input method  
+    (DONE)
+  - HPARSE_USE_HEAP_EXTRACT :- single best or all parses mode, 
+          remove this name and change it to a variable instead
+  - USE_PARSER_HEURISTICS :- convert to runtime option
+
+* In prob.c:
+  - remove alpha + normalizer from model
+  - add backoff to prior prob
+  - check backoff for attachment
+  - simplify model to ignore some information
+
+Bugs
+----
+
+* the entry for ( is not getting through from syntax-coded.flat
+  into syntax.flat due to a bug in synify.pl
+  (DONE)
+  had to replace ( and ) in the input with -LRB- and -RRB-
+  these entries were added to the syntax file as well
+
+* PRO is displayed as e in the derived trees
+  (DONE)
+
+* Check if the topmost feature values (for "S") are being passed to the
+  feature unifier.
+
+  Notes from talk with William:
+
+  toplabels.dat:
+  S #S_TOPFEAT
+  NP #NP_TOPFEAT
+
+  feat_tempates.dat:
+  #S_TOPFEAT   S.b:<mode> = ind/imp, S.b:<comp> = nil, S.b:<wh> = <invlink>, S.b:<punct term> = per/qmark/excl, S.b:<punct struct> = nil
+
+  input to unifier:
+  start: label0 [#S_TOPFEAT]
+  label0: ...
+
+  output from unifier:
+  start: label0 []
+
+  (DONE)
+
+* "I" gets default trees even though it should not.
+  bug is in synify.pl
+  (DONE)
+  wasn't a bug in synify.pl afterall, simply that "I" could
+  be the chemical symbol for Iodine hence not a pronoun.
+  removed all betaNn entries for all such cases in the Xtag
+  syntax file so that this doesn't happen.
+
+* the concert will be extended
+  does not allow alphanx1V[extended] to be used with betaVvx[will]
+  (DONE)
+  
+* for some light verbs when converting to syntax.flat from
+  syntax-coded.flat, the light verb gets repeated in the entry omitting
+  the noun:
+
+  <<INDEX>>take<<ENTRY>>take<<POS>>V<<ENTRY>>take<<POS>>N<<FAMILY>>Tnx0lVN1<<FEATURES>>#N.m_3sg
+
+  bug is in synify.pl
+  (DONE)
+
+* check if betanx0Vs1 adjoins properly into alphaW0nx1Vnx1 in the
+  forest, and also after print_deriv.pl
+  (DONE)
+
+
+Troubleshooting notes
+---------------------
+
+- if you get a synerror, most probably the buffer size for syntax entries
+  is not big enough. edit syn_entry.h and increase the value for SYN_BUFSZ
+
+Mods
+----
+
+- add head word as a separate entry in each item in the chart
+  this will allow the island driven parsing to continue independently
+  of the passing of head word info to the subst nodes (among others)
+  (DONE)
+- move prob from state into hpbackptr_list
+  actually, keep prob in state with the semantics of being the
+  prob of the first elt of the hpbackptr_list.
+  (DONE)
+- perhaps hpslist should be a heap, sorted by prob.
+  (DONE)
+
+Parser internals
+----------------
+
+Speedup notes:
+
+- the parser creates a new list each time it wants the rootnodes
+  of initial trees for subst or adjunction. see lines 189 and 287
+  in hparse.c
+  better to do this once before parsing.
+  (DONE)
+- change hpproc from a list to a infinite array implementation
+  or perhaps even a fixed array.
+  hpproc is alloced and freed every iteration of the closure
+  loop in the parser. it should be alloced once at the start
+  and freed once at the end. initial size estimate is a problem.
+  see hpproc-lengths.ps (run on testfile)
+  (DONE)
+- change hpslist to a heap implementation with a fixed size
+  heap (perhaps realloc'ed?) so that allocs while parsing are
+  reduced and also easier to add beam search pruning
+  (DONE)
+- change chart from a sparse array to a full 2D array.
+  (this should be a compile option)
+  best way to implement this is to add an option/pref to the
+  sparse matrix code which will reduce the spar calls to a
+  constant time by allocating a full 2D array for storage.
+
+Conventions:
+
+- a #define defn in lowercase it is a function replacement
+  (changed all such cases to static inline functions, as per 
+   ANSI C-99 specs)
+- a #define defn in uppercase is a pure macro expansion
+  (perhaps should be enums)
+- shortcuts in the code are commented by a marker XXX.
+
+To do list:
+
+* remove excess comments from hparse module (DONE)
+* upgrade to BerkeleyDB 3.x (DONE)
+* change libdb.a to shared library 
+* the conversion from syntax+morph to the syntax.flat file
+  should be sensitive to the morphological features that
+  conflict with trees in families and create a probability
+  file which penalizes unlikely lexicalizations, for example,
+  substitutions of wh- lex-trees into W[0-3] lex-trees, or
+  anchoring a NP rooted tree for a ger- word, and conversely
+  anchoring a S rooted tree for a ger+ word.
+* change all specific list handlers to a generic list utility
+! make myassert.h (just like mem.h) to make transparent access
+  to assert.h for all the files. this way one only needs a 
+  single ifdef statement
+  (DONE)
+! fold in syn_hash.c with rest of code (DONE)
+! change syn_db to use new Berkeley db functions (DONE)
+* perhaps #define with scalar values should be converted to enum stmts
+* perhaps #define stmts that describe functions should be converted
+  to static inline functions
+  (DONE)
+* Convert treefile.y in the bungee source from Perl yacc code to
+  C code to remove reliance on Berkeley yacc.
+
+1. Build a list of wh-words. If there are no wh-words in the
+   sentence then prune all W[[0-9] trees.
+
+2. NP chunks can be used to remove all predicative trees.
+
+3. sent.c - change needed to include NP chunks and POS tags.
+
+Memory allocation
+-----------------
+
+ David R. Hanson. Fast allocation and deallocation of memory based on
+      object lifetimes. Software - Practice and Experience,
+      20(1):5-12, January 1990.
+
+- Use obstack.h from the GNU C library.
+
+Feature structure unification
+-----------------------------
+
+* ignore BEGIN and END trees so that the output can contain the
+  sentences (DONE)
+* no morph features used (DONE)
+* do unification on the forest (DONE)
+
+all items below have been taken care of: 
+
+* output format has </> and extra [ which should be removed
+* multiple anchors are printed as [<f>][<f'>]
+  should be printed as [<f f'>]
+* read spaces between features instead of colons (:)
+* anoop will send parser output with/without features and treenodes
+* explore feasiblity of using a display routine for the
+  feature checked derivations
+

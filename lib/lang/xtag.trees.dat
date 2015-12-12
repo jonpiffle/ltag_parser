@@ -1,0 +1,9 @@
+(N_r N:headp N_f:footp:NA ) 
+(S_r (NP_1:NA PRO ) (VP V:headp ) ) 
+(NP N:headp ) 
+N:headp 
+(NP_r NP_f:footp:NA (S_p:NA NP_w:substp (S_r NP_0:substp (VP V:headp (NP_1:NA *eps* ) ) ) ) ) 
+(NP_r NP_f:footp:NA (S_p:NA NP_w:substp (S_r (NP_0:NA *eps* ) (VP V:headp NP_1:substp ) ) ) ) 
+(NP_r D:headp NP_f:footp:NA ) 
+D:headp 
+(S_r NP_0:substp (VP V:headp NP_1:substp ) ) 

@@ -1,0 +1,173 @@
+head	1.6;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.6
+date	2001.01.27.22.59.02;	author anoop;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2000.11.03.21.36.19;	author anoop;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2000.11.02.05.07.25;	author anoop;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2000.11.02.02.25.29;	author anoop;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2000.10.18.19.39.34;	author anoop;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2000.10.17.05.23.37;	author anoop;	state Exp;
+branches;
+next	;
+
+
+desc
+@instructions for compilation from source
+@
+
+
+1.6
+log
+@added instructions for setting up the parser to run with an
+external POS Tagger.
+@
+text
+@
+Requirements
+------------
+
+* Berkeley DB version 3.1.xx
+  available from http://www.sleepycat.com/
+
+* Perl version 5 or later
+
+* egcs 1.1b or later
+
+* Tcl/Tk version 4.0 or later
+
+Install steps
+-------------
+
+1. Go to the toplevel directory where you unpacked the tar file.
+   Edit the Makefile to reflect the location of programs in your local
+   installation. 
+
+   Run "make all"
+
+   It might take 5-20 minutes to complete all the compilation
+   steps. If it takes under a minute, please give me an account on
+   your machine.
+
+Read the HOWTO file for instructions on running the parser.
+
+If you have problems with running "make all", use instead the
+command "env PWD=`pwd` make -e all".
+
+Optional install steps
+----------------------
+
+* The TAGGER value in the Makefile has to be set to any POS Tagger that
+  uses the Penn Treebank tagset. Recommended tagger to use is MXPOST by
+  Adwait Ratnaparkhi available for download from:
+  http://www.cis.upenn.edu/~adwait/statnlp.html
+
+  Once you install the tagger, edit the value for TAGGER in the
+  Makefile in the current directory. See the file HOWTO for
+  instructions on running the parser with the tagger.
+
+* Install the following packages
+
+  1. Graphviz utilities
+     (http://www.research.att.com/sw/tools/graphviz/)
+
+  2. Berkeley Yacc for Perl output
+     (ftp://ftp.sterling.com/local/perl-byacc.tar.Z) 
+     Compile perlyacc and install into $LEMHOME/bin
+
+  To see derivation graphs, put dot (part of Graphviz utilities)
+  into your PATH environment variable. Read the HOWTO file for
+  instructions on using the graph viewer.
+
+
+Anoop Sarkar (anoop at linc.cis.upenn.edu)
+
+@
+
+
+1.5
+log
+@minor
+@
+text
+@d35 9
+@
+
+
+1.4
+log
+@added troubleshooting instructions for older shell version
+@
+text
+@d23 1
+a23 1
+   It might take 15-20 minutes to complete all the compilation
+@
+
+
+1.3
+log
+@upgraded to BerkeleyDB 3.1
+@
+text
+@d29 3
+@
+
+
+1.2
+log
+@removed setup_paths
+@
+text
+@d5 2
+a6 2
+* Berkeley DB
+  http://www.sleepycat.com/
+a7 7
+  Any 2.7.x version should work although we have extensively tested
+  only with version 2.7.5.  Version 3.x of Berkeley DB also apparently
+  works without any modifications.
+
+  After installing Berkeley DB, insert the directory where db_load can
+  be found into your PATH environment variable.
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d30 3
+a32 1
+   It might take 15-20 minutes to complete all the compilation steps.
+a33 3
+3. Each time you want to run the parser, first run "source
+   setup_paths.sh" (for tcsh users: "source setup_paths.csh")
+
+@

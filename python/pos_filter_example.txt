@@ -1,0 +1,15 @@
+bin/runparser -p +n -df bin/tagger_filter -pp test/testfile4.tagged test/testfile4 | bin/count_derivations
+
+echo "Mr. Miller notes that actor Paul Newman 's family owned a sporting-goods store in Cleveland" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs
+
+(S (NP-SBJ (NNP Mr.) (NNP Miller) ) (VP (VBZ notes) (SBAR (SBAR (IN that) (S (NP-SBJ (NP (NN actor) (NNP Paul) (NNP Newman) (POS 's) ) (NN family) ) (VP (VBD owned) (NP (NP (DT a) (NNS sporting-goods) (NN store) ) (PP-LOC (IN in) (NP (NNP Cleveland) )))))))))
+
+echo "The dog chased the cat" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs
+echo "The dog chased the cat" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | bin/tagger_filter test/chased.tagged
+echo "The dog chased the cat" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | bin/tagger_filter test/chased.tagged | bin/nbest_parser.bin data/english/english.grammar lib/xtag.prefs
+
+echo "The dog that chased the cat ran" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs
+echo "The dog that chased the cat ran" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | bin/tagger_filter test/chased2.tagged
+echo "The dog that chased the cat ran" | bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | bin/tagger_filter test/chased2.tagged | bin/nbest_parser.bin data/english/english.grammar lib/xtag.prefs
+
+Note: Needed to manually edit src/filter/pos_mapping.ph to add entries for Comp

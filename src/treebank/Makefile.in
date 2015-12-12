@@ -1,0 +1,18 @@
+
+LEMHOME=@LEMHOME@
+
+install:
+	/bin/cp clean_etree.pl $(LEMHOME)/bin/clean_etree
+	perl -pe "s|\@LEMHOME\@|$(LEMHOME)|g" show_etree.pl > $(LEMHOME)/bin/show_etree
+	perl -pe "s|\@LEMHOME\@|$(LEMHOME)|g" statparser.sh > $(LEMHOME)/bin/statparser
+	perl -pe "s|\@LEMHOME\@|$(LEMHOME)|g" process_corpus.pl > $(LEMHOME)/bin/process_corpus
+	perl -pe "s|\@LEMHOME\@|$(LEMHOME)|g" tbparser.pl > $(LEMHOME)/bin/tbparser
+	chmod 755 $(LEMHOME)/bin/clean_etree
+	chmod 755 $(LEMHOME)/bin/show_etree
+	chmod 755 $(LEMHOME)/bin/statparser
+	chmod 755 $(LEMHOME)/bin/process_corpus
+	chmod 755 $(LEMHOME)/bin/tbparser
+
+clean:
+	/bin/rm -f Makefile
+	@echo "cleaned treebank"

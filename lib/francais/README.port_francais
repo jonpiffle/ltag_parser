@@ -1,0 +1,83 @@
+
+Notes for porting the parser to the ftag grammar from U. Paris VII
+------------------------------------------------------------------
+
+1. check the following files in the current directory
+  POS.ph
+  defaults.ph
+  francais_gram.ph
+  morph.ph
+  toplabels.in
+  syndefault.in
+  epsilons.in
+
+2. Arrange input data files into the following directories:
+
+   Convert text files into db flat file format:
+   % frsyn_convert.pl *.text *.txt > syntax/syntax-coded.flat
+
+   Create morph flat file:
+   link morph file to morphology/trunc_morph.flat
+
+   % cd morphology
+   % ln -s <morph-file> trunc_morph.flat
+
+At the end everything should look like this:
+
+francais/:
+total 32
+drwxrwxr-x   2 anoop    anoop        4096 May 29 04:11 morphology
+drwxrwxr-x   2 anoop    anoop        4096 May 29 05:22 syntax
+-rw-r--r--   1 anoop    anoop       19677 May 29 08:48 templates.lex
+drwxrwxr-x   2 anoop    anoop        4096 May 29 04:02 trees
+
+francais/morphology:
+total 1656
+-rwxr-xr-x   1 anoop    anoop     1689379 May 29 03:31 morph_french.flat
+lrwxrwxrwx   1 anoop    anoop          17 May 29 04:11 trunc_morph.flat -> morph_french.flat
+
+francais/syntax:
+total 1040
+-rw-r--r--   1 anoop    anoop       47033 May 29 03:32 adj.98.text
+-rw-r--r--   1 anoop    anoop       21560 May 29 03:32 adv.98.text
+-rw-r--r--   1 anoop    anoop        6093 May 29 03:32 det.98.txt
+-rwxrwxr-x   1 anoop    anoop        1756 May 29 04:09 frsyn_convert.pl
+-rw-r--r--   1 anoop    anoop      226888 May 29 03:32 ltt.nomc.text
+-rw-r--r--   1 anoop    anoop        7728 May 29 03:32 ltt.nomp.text
+-rw-r--r--   1 anoop    anoop        2135 May 29 03:32 pro.98.txt
+-rw-rw-r--   1 anoop    anoop      538550 May 29 04:09 syntax-coded.flat
+-rw-r--r--   1 anoop    anoop      181464 May 29 03:32 verbes.98.txt
+
+francais/trees:
+total 7456
+-rw-r--r--   1 anoop    anoop        1560 May 29 04:02 a0Ad.new
+.
+. (other filenames deleted)
+.
+-rw-r--r--   1 anoop    anoop        2296 May 29 04:02 x0Ad.new
+
+3. copy templates.all to templates.lex
+   check that all comments are ; and there are no comments starting with %
+   Add the line #S_TOPFEATS with the feature structure restrictions for
+   the top of the derivation (check the file toplabels.in in the current dir).
+
+4. Convert the grammar and syntax file
+   (this will take about an hour for the large ftag grammar with about
+    5300 trees)
+
+  % setenv LEMINPUT <full-path>/francais
+  % setenv LEMOUTPUT <full-path>/lem
+  % cd bin
+  % ./create_tree_data ../lib/francais/francais_gram.ph
+  % ./synify ../lib/francais/francais_lex.ph
+  % cd ../data/francais/
+  % syn_db_create syntax.flat
+
+5. Run parser as usual except use the grammar file francais.grammar
+   from data/francais
+
+----
+Anoop Sarkar
+<anoop at linc.cis.upenn.edu>
+
+

@@ -1,0 +1,241 @@
+0.14.0
+------
+
+* added Java client/server architecture for the parser
+
+* all feature structure handling in xtag.browser now fixed
+
+0.13.5
+------
+
+* buffering changes for server
+
+* featchecker input semantics changed
+
+0.13.4
+------
+
+* xtag.browser now accepts forests with no features
+
+* fixed english grammar data files
+
+0.13.3
+------
+
+* Fixed utilities in lib/lang that enable creation of small
+  hand-written grammars and lexicons
+
+0.13.2
+------
+
+* Added save derivation to forest browser
+
+0.13.1
+------
+
+* Changes to top level makefile for cleaning up distribution.
+
+0.13.0
+------
+
+* Added grammar conversion for hand-written grammars.
+
+0.12.2
+------
+
+* Folded in the Java browser into the installation process
+
+0.12.1
+------
+
+* Automated creation of system specific binaries for distribution
+
+0.12.0
+------
+
+* Added filtering based on POS Tagging
+
+0.11.1
+------
+
+* Several small bug fixes to utility programs
+
+* Fixed heuristics for parser timeouts
+
+0.11.0
+------
+
+* Added select_deriv: an interactive method for finding the preferred
+  derivation from a forest
+
+0.10.4
+------
+
+* fixed backptr bug in parser, causing mismatch between different
+  _disallow_leftaux/rightaux settings
+
+
+0.10.3
+------
+
+* perl binary location is now user-defined
+
+* improved user interface for xtag.show.word
+
+0.10.2
+------
+
+* fixed df2dot
+
+* new version of derivation forest viewer with feature structure
+  handling  
+
+* added xtag.show.word
+
+0.10.1
+------
+
+* Added xviewtree to src/bungee
+
+0.10.0
+------
+
+* Added TOP feature structure unification over the forest.
+
+* Added rudimentary client/server capability to runparser.
+
+* Added buffering control in the parser using the prefs file.
+
+0.9.3
+-----
+
+* Made processing of syntax file more fault tolerant. If a tree or
+family mentioned in the syntax file is missing from the grammar, a
+warning is generated as before, but the remainder of the syntax
+entries are processed.
+
+0.9.2
+-----
+
+* Fixed a bug in the parser. Certain missing derivations reinstated.
+
+0.9.1
+-----
+
+* Added treebank distrib
+
+0.9.0
+-----
+
+* Added src/treebank for programs that process a treebank to produce
+  grammars and model parameters.
+
+0.8.2
+-----
+
+* Improved installation to avoid recreation of syntax.db when
+  debugging the source package
+
+0.8.1
+-----
+
+* Added program that performs a consistency check over the syntax file
+
+0.8.0
+-----
+
+* Upgraded to BerkeleyDB 3.1
+
+0.7.1
+-----
+
+* Better filtering.
+
+0.7.0
+-----
+
+* Ported the grammar conversion tools to the treebank grammar.
+
+* runparser can now switch between the XTAG grammar and the Treebank
+  grammar. 
+
+0.6.4
+-----
+
+* Eliminated some compile-time warnings under Linux.
+
+0.6.3
+-----
+
+* Removed bugs caused by elimination of environment variables in the
+  programs that performed conversion of the XTAG grammar and lexicon.
+
+* Fixed bug in syntax file creation caused due to changes made in
+  previous version.
+
+0.6.2
+-----
+
+* Removed dependence on environment variables like LEMHOME and the use
+  of soft links to handle different file locations across
+  platforms. These problems are now handled by the installation
+  programs. 
+
+0.6.1
+-----
+
+* Fixed a bug in the parser user interface which did not allow nbest
+  input to the parser without going through syn_get.bin
+
+* Merged all install scripts into top level Makefile.
+
+0.6.0
+-----
+
+* Combined the nbest processing of lexicalized trees from the
+  statistical parser into the generic parser. 
+
+* Implemented generic lexicalized tree filtering mechanism between syn
+  access and parser.
+
+0.5.0
+-----
+
+* Added goal directed top-down prediction. This considerably speeds up
+processing of long sentences.
+
+0.4.0
+-----
+
+* Cleaned up parser code to make future changes to the behaviour
+easier to control.
+
+* Allows preferences for grammar style or parser behaviour to be
+controlled using a file read at runtime.
+
+* Added a more flexible command line parser interface.
+
+0.3.0
+-----
+
+* Folded in statistical parser code with the non-statistical parser
+that can be used with general XTAG-style grammars.
+
+* Fixed bug that ignored the topmost start feature.
+
+* Included the feature unification package into the current source
+tree instead of installing as a separate package.
+
+* The set of start symbols and the default entries are now part of the
+grammar definition.
+
+0.2.0
+-----
+
+* Switched to a derivation forest output with associated tools. 
+
+0.1.0
+-----
+
+* Initial release
+

@@ -1,0 +1,9 @@
+sent="the man took a walk"
+0 the DT D betaDnx -12.00
+1 man NN N alphaNXN -12.00
+2 took VB V alphanx0lVN1 -12.00
+2 took VB V alphanx0Vnx1 -12.00
+3 a DT D betaDnx -12.00
+4 walk NN N alphanx0lVN1 -12.00
+4 walk NN N alphaNXN -12.00
+end

@@ -1,0 +1,12 @@
+
+LEMHOME=@LEMHOME@
+
+indentrees: indent.c
+	gcc -o indentrees indent.c
+
+install: indentrees
+	/bin/cp indentrees $(LEMHOME)/bin/indentrees
+
+clean:
+	/bin/rm -f Makefile
+	/bin/rm -f indentrees

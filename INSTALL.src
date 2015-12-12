@@ -1,0 +1,59 @@
+
+Requirements
+------------
+
+* Berkeley DB version 3.1.xx
+  available from http://www.sleepycat.com/
+
+* Perl version 5 or later
+
+* egcs 1.1b or later
+
+* Tcl/Tk version 4.0 or later
+
+Install steps
+-------------
+
+1. Go to the toplevel directory where you unpacked the tar file.
+   Edit the Makefile to reflect the location of programs in your local
+   installation. 
+
+   Run "make all"
+
+   It might take 5-20 minutes to complete all the compilation
+   steps. If it takes under a minute, please give me an account on
+   your machine.
+
+Read the HOWTO file for instructions on running the parser.
+
+If you have problems with running "make all", use instead the
+command "env PWD=`pwd` make -e all".
+
+Optional install steps
+----------------------
+
+* The TAGGER value in the Makefile has to be set to any POS Tagger that
+  uses the Penn Treebank tagset. Recommended tagger to use is MXPOST by
+  Adwait Ratnaparkhi available for download from:
+  http://www.cis.upenn.edu/~adwait/statnlp.html
+
+  Once you install the tagger, edit the value for TAGGER in the
+  Makefile in the current directory. See the file HOWTO for
+  instructions on running the parser with the tagger.
+
+* Install the following packages
+
+  1. Graphviz utilities
+     (http://www.research.att.com/sw/tools/graphviz/)
+
+  2. Berkeley Yacc for Perl output
+     (ftp://ftp.sterling.com/local/perl-byacc.tar.Z) 
+     Compile perlyacc and install into $LEMHOME/bin
+
+  To see derivation graphs, put dot (part of Graphviz utilities)
+  into your PATH environment variable. Read the HOWTO file for
+  instructions on using the graph viewer.
+
+
+Anoop Sarkar (anoop at linc.cis.upenn.edu)
+

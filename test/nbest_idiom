@@ -1,0 +1,8 @@
+sent="John paid off Tony the money"
+0 John NN N alphaNXN -12.00
+1 paid VB V alphanx0Vplnx2nx1 -12.00
+2 off PRT PL alphanx0Vplnx2nx1 -12.00
+3 Tony NN N alphaNXN -12.00
+4 the DT D betaDnx -12.00
+5 money NN N alphaNXN -12.00
+end

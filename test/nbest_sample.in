@@ -1,0 +1,8 @@
+sent="who does she think John likes"
+0 who WHNP N alphaNXN -12.00
+1 does MD V betaVs -12.00
+2 she NN N alphaNXN -12.00
+3 think VB V betanx0Vs1 -12.00
+4 John NNP N alphaNXN -12.00
+5 likes VBZ V alphaW1nx0Vnx1 -12.00
+end

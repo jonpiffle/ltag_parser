@@ -1,0 +1,16 @@
+
+To install bungee, edit the top line of the file "bungee" to reflect
+the location of wish-4.0 in your local system.
+
+You must have the environment variable LEMHOME set to where you
+have installed bungee on your local system. For example, if you
+installed bungee to /home3/user/bungee and you use csh then
+you must execute "setenv LEMHOME /home3/user/bungee" before
+using xtag.show or xtag.show.fam
+
+Link wish (ver 4.0 or later) into the $LEMHOME/bin directory:
+e.g. ln -s /usr/local/bin/wish-4.0 $LEMHOME/bin/wish
+
+See README.bungee to see how to use xtag.show and xtag.show.fam
+to view trees in the XTAG grammar.
+

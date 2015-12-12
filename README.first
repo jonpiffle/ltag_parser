@@ -1,0 +1,67 @@
+
+This is a development release of a TAG parser that can be used to parse
+using the XTAG English grammar. It is still a preliminary release --
+trying to use it immediately as part of a runtime system is probably
+unrealistic. This short description will tell you what capabilities the
+parser currently includes and what functionality it currently lacks.
+
+To use this release you will need to understand various formal aspects
+of Tree Adjoining Grammars, especially derivation trees. Familiarity
+with the XTAG English grammar and its components will be helpful also.
+
+You can get more information about the XTAG English grammar including a
+technical report explaining the formalism and other aspects of the
+grammar at the following URL:
+
+http://www.cis.upenn.edu/~xtag/
+
+What this package contains:
+---------------------------
+
+* It is a general TAG parser written entirely in ANSI C. It has been
+  tested on SunOS 5.7 and on Linux 2.x. See INSTALL.notes for other
+  requirements.
+
+* It uses a chart based head-corner parsing algorithm. The parser
+  can also be used as a probabilistic parser when parameter values are
+  available.
+
+* It has a small memory footprint and should run reasonably on systems
+  with 64MB of memory for sentences with less than 25 words (depending
+  on grammar and lexicon size).
+
+* This release comes with the complete stable version of the XTAG
+  English grammar.
+
+* It comes with a Tcl/Tk derived/derivation tree viewer as well as a
+  viewer for the grammar trees/families. 
+
+What file to read next:
+-----------------------
+
+Read the README file for location and other information about this
+package.
+
+Read the HOWTO file for instructions on running the parser and using
+the elementary tree viewer.
+
+Caveats:
+--------
+
+Many aspects of the codebase will keep changing in future versions. Any
+additions or suggestions are welcome. Until a better system is in
+place, any changes you want to contribute should be sent to me as patch
+files by email (mailto: anoop at linc.cis.upenn.edu). The code is
+licensed under the GPL (the licence is included with this package in a
+file called COPYING in the current directory).
+
+Installation should not be too difficult for people who have experience
+in installing other software packages. However, I cannot promise any
+support for problems you might face in installing the parser. If you
+are having problems installing, then first try the precompiled binary
+versions of the software available from the same ftp site as the source
+package. (ftp://ftp.cis.upenn.edu/pub/xtag/lem/)
+
+Anoop Sarkar
+anoop at linc.cis.upenn.edu
+

@@ -1,0 +1,155 @@
+import nltk, json
+import shlex, subprocess
+from nltk.corpus.util import LazyCorpusLoader
+from nltk.corpus.reader import CategorizedBracketParseCorpusReader
+from nltk.tree import Tree, ParentedTree, ImmutableTree
+from parseval import parseval
+
+def flip_word_pos(lst):
+    return [(pos, word) for word, pos in lst]
+
+def merge_tree_nnps(tree):
+    """
+    Takes a parse tree and merges any consecutive leaf nodes that come from NNPs
+    For example if there is a segment of:
+        (NP
+            (JJ old)
+            (NNP Pierre)
+            (NNP Vinken)
+        )
+    Returns:
+        (NP
+            (JJ old)
+            (NNP PierreVinken)
+        )
+    """
+
+    # require a parented tree to get a subtrees tree position
+    p = ParentedTree.convert(tree)
+
+    # iterates subtrees of height 3. This is where NP's leading to NNP's leading to lexicalizations will be
+    for s in p.subtrees(filter=lambda s: s.height() == 3):
+        # merge NNP's in the list representation of this trees children: [(POS, word), ...] 
+        new_noun_phrase = merge_tagged_nnps([(c.label(), c[0]) for c in s])
+        child_str = " ".join("(%s %s)" % (pos, word) for pos, word in new_noun_phrase)
+        # create new subtree with merged NNP's
+        new_s = ParentedTree.fromstring("(%s %s)" % (s.label(), child_str))
+
+        # replace old subtree with new subtree
+        p[s.treeposition()] = new_s
+    return Tree.convert(p)
+
+def merge_tagged_nnps(tagged):
+    new_sentence = []
+    current_nnp = []
+
+    for pos, word in tagged:
+        if pos == "NNP":
+            current_nnp.append(word)
+        elif len(current_nnp) > 0:
+            new_nnp = ("NNP", "".join(current_nnp))
+            new_sentence.append(new_nnp)
+            current_nnp = []
+            new_sentence.append((pos, word))
+        else:
+            new_sentence.append((pos, word))
+
+    if len(current_nnp) > 0:
+        new_nnp = ("NNP", "".join(current_nnp))
+        new_sentence.append(new_nnp)
+    return new_sentence
+
+def tagged_to_sent(tagged):
+    return [word for pos, word in tagged]
+
+def sent_to_str(sent):
+    return " ".join(sent)
+
+def tagged_sent_to_str(tagged_sent):
+    return " ".join([word + '_' + pos for pos, word in tagged_sent])
+
+def create_tmp_tagged_file(tagged_str):
+    filename = 'test/tmp.tagged'
+    with open('../' + filename, 'w') as f:
+        f.write(tagged_str + '\n')
+    return filename
+
+def parser_output_to_parse_deriv_trees(output):
+    lines = output.strip().split("\n")
+    deriv_tree_lines = lines[::2]
+    parse_tree_lines = lines[1::2]
+    parse_trees = [Tree.fromstring(line.replace('\x06', 'epsilon_')) for line in parse_tree_lines]
+    deriv_trees = [Tree.fromstring(line) for line in deriv_tree_lines]
+    return parse_trees, deriv_trees
+
+def run_parser(sent, tagged_filename):
+    cmd = "cd ..; \
+    echo '%s' | \
+    bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | \
+    bin/tagger_filter %s | \
+    bin/nbest_parser.bin data/english/english.grammar lib/xtag.prefs | \
+    bin/print_deriv -b" % (sent, tagged_filename)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
+    output, err = p.communicate()
+    return parser_output_to_parse_deriv_trees(output)
+
+def get_subtree_set(tree):
+    subtree_set = set([tuple([l for l in i.leaves() if 'epsilon_' not in l]) for i in tree.subtrees(filter=lambda s: s.height() >= 3)])
+    return subtree_set
+
+def distance(tree1, tree2):
+    subtree_set1 = get_subtree_set(tree1)
+    subtree_set2 = get_subtree_set(tree2)
+
+    precision = 1 - (len(subtree_set1 - subtree_set2) / float(len(subtree_set1)))
+    recall = 1 - (len(subtree_set2 - subtree_set1) / float(len(subtree_set2)))
+    fscore = 2 * precision * recall / (precision + recall)
+
+    return fscore
+
+if __name__ == '__main__':
+    ptb = LazyCorpusLoader( # Penn Treebank v3: WSJ portions
+        'ptb', CategorizedBracketParseCorpusReader, r'wsj/\d\d/wsj_\d\d\d\d.mrg',
+        cat_file='allcats.txt', tagset='wsj')
+
+    corpus = zip(ptb.fileids(), ptb.parsed_sents(), ptb.tagged_sents())
+    sent_num = 0
+    for i, (fileid, parse, tagged) in enumerate(corpus):
+        filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + ".txt"
+        if i > sent_num:
+            exit()
+        elif i == sent_num:
+            pass
+        else:
+            continue
+
+        tagged = flip_word_pos(tagged)
+        tagged = merge_tagged_nnps(tagged)
+        sent = tagged_to_sent(tagged)
+        parse = merge_tree_nnps(parse)
+        gold_tree = parse
+        #gold_tree.draw()
+        #print(parse)
+        #print(tagged)
+        #print(sent_to_str(sent))
+        #print(tagged_sent_to_str(tagged))
+        tagged_filename = create_tmp_tagged_file(tagged_sent_to_str(tagged))
+
+        parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename)
+        print(len(parse_trees), len(deriv_trees))
+        trees = zip(parse_trees, deriv_trees)
+
+        best_parse, best_deriv, best_val = None, None, 0
+        for test_parse_tree, test_deriv_tree in trees:
+            val = distance(test_parse_tree, gold_tree)
+            if val > best_val:
+                best_parse, best_deriv, best_val = test_parse_tree, test_deriv_tree, val
+                #test_parse_tree.draw()
+                #test_deriv_tree.draw()
+        print('BEST:', best_val)
+        best_parse.draw()
+        best_deriv.draw()
+        tree_dict = {"parse": str(best_parse), "deriv": str(best_deriv)}
+        with open(filename, 'w') as f:
+            f.write(json.dumps(tree_dict))
+        exit()

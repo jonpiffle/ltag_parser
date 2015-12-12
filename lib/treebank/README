@@ -1,0 +1,33 @@
+
+Before running any of the following programs, set env variables
+LEMINPUT and LEMOUTPUT
+
+Also set your PATH variable to include $LEMOUTPUT/bin
+
+e.g. LEMINPUT  /mnt/linc/xtag2/pkg/fei.data/5.19.result
+     LEMOUTPUT /mnt/linc/xtag2/anoop/lem
+
+Edit the values and filenames in treebank_gram.ph
+Edit the values and filenames in treebank_lex.ph
+
+To convert the treebank grammar for use with the parser
+-------------------------------------------------------
+
+Note that clean_etree also creates epsilons.in
+
+% clean_etree treebank_lex.ph
+% create_tree_data treebank_gram.ph
+
+To create the syntax flat file
+------------------------------
+
+% process_corpus treebank_lex.ph
+% patch_grammar treebank_gram.ph
+% cd $LEMOUTPUT
+% make compile-treebank-syntax
+
+
+-----------
+Anoop Sarkar
+anoop at linc.cis.upenn.edu
+

@@ -1,0 +1,47 @@
+Primary Authors:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+  William Schuler <schuler@linc.cis.upenn.edu>
+
+For a more detailed list of contributors to the code look at the file
+ChangeLog in this directory.
+
+Authors for each sub-directory of this package are:
+
+./src/browser:
+  Moses Kimanzi <kimanzi@linc.cis.upenn.edu>
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/bungee:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+  Adwait Ratnaparkhi <adwait@unagi.cis.upenn.edu>
+
+./src/db:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/derivations:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/derivations/select_deriv.pl:
+  Kate Forbes <forbesk@unagi.cis.upenn.edu>
+
+./src/dict:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/featchecker:
+  William Schuler <schuler@linc.cis.upenn.edu>
+
+./src/grammar:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/indent:
+  Fei Xia <fxia@linc.cis.upenn.edu>
+
+./src/parser:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/treebank:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+
+./src/user:
+  Anoop Sarkar <anoop@linc.cis.upenn.edu>
+

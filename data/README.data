@@ -1,0 +1,45 @@
+
+Format of the output files
+==========================
+
+N.B: all indices in .dat files assume start index is 0
+
+english.grammar
+---------------
+
+contains list of all files that comprise the grammar and size of each
+data structure. the size reported is the true size. no need to add 1.
+
+labels.dat
+----------
+
+all labels used in treenodes.dat
+
+subscripts.dat
+--------------
+
+all subscripts used in treenodes.dat
+
+treenodes.dat
+-------------
+
+LEFTCHILD RIGHT FLAG LABEL SUBSCRIPT
+
+if FLAG == 1 then RIGHT == PARENT else RIGHT == RIGHT_SIBLING
+-1 stands for NULL pointer
+SUBSCRIPT = -1 if no subscript exists for node
+
+trees.dat
+---------
+
+ROOT FOOT #SUBST #ANCHOR #NA SUBST_L ANCHOR_L NA_L
+
+treenames.dat
+-------------
+
+NAME
+
+linenumber of NAME corresponds to linenumber in trees.dat
+wc -l treenames.dat == wc -l trees.dat
+
+

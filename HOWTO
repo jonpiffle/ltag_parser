@@ -1,0 +1,239 @@
+
+Running the parser
+------------------
+
+1. To run the parser on a set of input sentences:
+
+   % cd <install-directory>
+   put the ./bin directory in your PATH variable
+
+   % cd test
+   % runparser +n testfile | print_deriv -b | showtrees
+ 
+   (showtrees uses Tcl/Tk; if you get an error see the Troubleshooting
+   section below).
+
+   you can save the parser output to a file:
+
+   % runparser +n testfile > outfile
+
+   For more options on viewing the output of parsing, experiment with
+   the options to print_deriv:
+
+   % print_deriv -h
+
+   Also, you can use 'indentrees' instead of 'showtrees' to view the
+   parser output on a textual display.
+
+2. To use the parser with feature structure unification: 
+
+   % cd <install-directory>/test
+   % runparser +c testfile | print_deriv -f | showtrees
+
+   A window should pop up with parses that have had successful
+   unifications. Pressing 'f' in the window shows you the feature
+   structures of each tree. 
+
+   To unify feature structures after parsing:
+
+   % runparser +u outfile | print_deriv -f | showtrees
+
+   (The directory ./src/browser contains an experimental Java based
+   browser for derivation forests. It is still under development and
+   probably will not work on all parser outfiles.)
+
+3. Useful utilities that can be used on the output of the parser:
+
+   % count_derivations outfile
+
+   Returns number of derivations encoded in the derivation forest
+   which is the output of the parser.
+
+   % truncate_graph outfile
+
+   Randomly samples derivations from the forest. this is very useful
+   when examining sentences with a large number of derivations
+   (typically before feature structure unification). For example,
+
+   % runparser +n testfile2 | truncate_graph | print_deriv -b | showtrees 
+
+4. Running the parser with lexicalized trees pre-assigned to words
+   (the logprob values are ignored):
+
+   % cd <install-directory>/test
+   % runparser +n -d nbest_sample.in | print_deriv -b | showtrees
+
+5. Running the parser with a POS tagger acting as a filter on the trees
+   selected by the words, e.g:
+
+   % cd <install-directory>/test
+   % runparser -p +n -df ../bin/tagger_filter testfile > outfile
+
+   -p indicates that the sentence final punctuation should not be
+   removed since lack of such cues usually causes errors in tagging.
+
+   Note that for this to work properly, you must have a POS Tagger
+   installed and you must include the correct path and invocation for
+   the tagger binary in the Makefile in this directory when installing
+   this parser. If you want to add or modify the tagger binary, then
+   run "make clean", edit the Makefile and follow the installation
+   directions.
+
+6. You can also choose to submit a previously tagged corpus to the
+   parser. This is useful when you want to hand correct the output of
+   a tagger. 
+
+   For example, if you have a file called 'testfile' which was
+   previously tagged to produce 'testfile.tagged' then you can tell
+   the parser to utilize this file as follows:
+
+   % runparser -p +n -df ../bin/tagger_filter \
+          -pp testfile.tagged testfile > outfile
+
+   It is important to keep the two files aligned. If you have the
+   sentence final punctuation in the tagged file, then the "-p" option
+   must be used. 
+
+7. To see the derivation forest output directly as an and-or graph,
+   first install the graphviz utilities (see INSTALL.src) and then:
+
+   % cd <install-directory>/test
+   % runparser +n testfile > outfile
+   % rundot outfile
+
+Looking at elementary trees from the grammar
+--------------------------------------------
+
+You can use the following utilities to view trees from the grammar:
+(here we assume that we are using the english grammar)
+
+1. xtag.show english <regexp>
+
+  xtag.show can be used to view individual trees from the grammar.
+  Any regular expression <regexp> can be used to match the tree names.
+
+  e.g. xtag.show ^betaN[0-9]* will display all the relative clause
+  trees
+
+2. xtag.show.fam english <regexp1> <regexp2>
+
+  xtag.show.fam can be used to view trees in families from the
+  grammar.  Any tree family that matches <regexp1> and then each tree
+  in that family which matches <regexp2> is displayed.
+
+  e.g. xtag.show.fam ^Tnx0Vnx1$ ^alphaW[0-1]* will display all
+  wh-extraction trees from the transitive tree family
+
+3. xtag.show.word <lang> <word> [<regexp>]
+
+   xtag.show.word can be used to view all trees lexicalized by
+   <word>. In addition, the list of all such trees can be filtered by
+   using the optional <regexp> parameter. Use ".*" if you want to see
+   all selected trees.
+
+   e.g. xtag.show.word english make "\[make\]" will show only those
+   trees anchored by the single word "make", i.e. it will ignore
+   multiply anchored trees for "make". To see all trees run the
+   command xtag.show.word english make ".*"
+
+Using the tree display window:
+
+1, 2 and 3 stand for left, right and middle mouse buttons respectively.
+
+Listbox window
+--------------
+	<Double-Button-1> => displays item
+
+Display window
+--------------
+	<1>          => moves to preceding item
+	<3>          => moves to following item
+	<2>          => jumps to item named in Item entry
+	<KeyPress-f> => shows features
+	<KeyPress-q> => exits program
+	<KeyPress-p> => saves encapsulated postscript to file
+
+Feature window
+--------------
+	<KeyPress-q> => destroys feature window
+	<KeyPress-p> => saves features to file as text
+
+N.B: The greek letters alpha and beta in the tree names are represented
+in the tree names as a "alpha" and "beta" prefix of the name
+respectively.
+
+Converting the XTAG English grammar for use with the parser
+-----------------------------------------------------------
+
+Go to the directory where you installed the package. Check the files in
+the directory ./lib/english/ to check if the values match those in the
+latest version of the grammar. Then execute these commands in your
+shell:
+
+  % setenv LEMINPUT /mnt/linc/xtag2/pub/english	
+    (OR export LEMINPUT=/mnt/linc/xtag2/pub/english)
+  % setenv LEMOUTPUT /mnt/linc/xtag2/anoop/lem
+    (OR export LEMOUTPUT=/mnt/linc/xtag2/anoop/lem)
+  % cd bin
+  % ./create_tree_data ../lib/english/english_gram.ph
+  % ./synify ../lib/english/english_lex.ph
+  % cd ../data/english/
+  % syn_db_create syntax.flat
+
+Troubleshooting
+---------------
+
+- Installation does not work.
+
+  You might have an old version of bash/tcsh which does not set the
+  PWD environment variable. Type the following:
+
+  % export PWD=`pwd`  (for bash users)
+  % setenv PWD `pwd`  (for tcsh users)
+
+- Problems with running showtrees or xtag.show/xtag.show.fam
+
+  The problem is most likely a faulty installation process. Upgrade
+  your bash to version 2.02 or later. If you are using Redhat Linux
+  then you can simply run bash2 and then follow the installation
+  instructions above to run the parser.
+
+  Alternatively, if you cannot find bash ver2 installed on your
+  machine and you do not want to download it from www.gnu.org and
+  install it, then you can edit the Tcl/Tk and Perl scripts in
+  <install-directory>/bin and <install-directory>/utils manually to the
+  locations of wish (version 4.0 or later) and perl (version 5.x or
+  later)
+
+  Another reason for this might be that the installation was
+  botched. Try manually linking the location of wish to the bin
+  directory: 
+
+  % ln -s <full-path-to-wish> <install-directory>/bin/wish
+
+- Problems with perl script invocation
+
+  If your are having problems with perl executing any of the perl
+  scripts then try replacing the #! invocation with the one given
+  below:
+
+  #!/bin/sh -- 
+  eval '(exit $?0)' && eval 'exec /usr/bin/perl -wS $0 ${1+"$@"}'
+  & eval 'exec /usr/bin/perl -wS $0 $argv:q'
+	    if $running_under_some_shell;
+
+  If even this does not work then upgrade your Bourne shell to
+  bash-2.02 or later or edit the first line of all the perl files in
+  the bin/ directories to point to your perl installation. Find the
+  perl files with the command "cd <install-directory>/bin; grep perl
+  *". Edit the first line of each file reported by grep to point to the
+  location of perl.
+
+- While parsing, - if you get a synerror, most probably the buffer
+  size for syntax entries is not big enough. edit syn_entry.h in
+  src/parser/ and increase the value for SYN_BUFSZ -- then run
+  "make.install" in that directory.
+
+
+Anoop Sarkar (anoop at linc.cis.upenn.edu)
+

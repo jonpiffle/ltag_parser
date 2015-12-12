@@ -1,0 +1,27 @@
+#!/bin/sh
+
+LEMHOME=@LEMHOME@
+BERKELEY_DB=@BERKELEY_DB@
+
+if (test $# = 0); then (
+   echo "usage: syn_db_create <file>.flat"
+); else (
+   NAME=`basename $1 ".flat"`
+   echo "using $NAME.flat as input flat file"
+   if (test -f $NAME.flat); then (
+   	/bin/rm -f $NAME.db
+	if (test -x $LEMHOME/bin/prep_syn_db.pl); then (
+		cat $1 | \
+			sed 's/\\/\\\\/g' | \
+			$LEMHOME/bin/prep_syn_db.pl | \
+			$BERKELEY_DB/bin/db_load -T -c duplicates=1 -t hash $NAME.db
+		chmod 0664 $NAME.db
+		echo "created $NAME.db"
+	); else (
+		echo "could not execute $LEMHOME/bin/prep_syn_db.pl"
+        ); fi
+   ); else (
+	echo "could not find $NAME.flat"
+   ); fi
+); fi
+

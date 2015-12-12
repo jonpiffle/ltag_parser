@@ -1,0 +1,484 @@
+#!/bin/sh
+# this line comments next for wish \
+exec @WISHBIN@ -f "$0" "$@"
+#
+# $Id: showtrees.tk,v 1.9 2000/10/18 00:02:38 anoop Exp $
+# Anoop Sarkar
+# anoop@linc.cis.upenn.edu
+#
+# Based on original tree display code by:
+# Adwait Ratnaparkhi
+# adwait@unagi.cis.upenn.edu
+#
+# Usage: viewtree <file>   : where each line of <file> contains a parse tree
+#   or   viewtree          : where parse trees are expected from STDIN
+#
+# Parse trees must conform to standard LISP-like syntax:
+# Tree -> (CONSTITUENT-LABEL Tree1 Tree2 .. TreeN) 
+# Tree -> (POS-LABEL word)
+#
+# Bindings: (For Top Level Window)
+#           <Left-Button>  		: Previous Tree
+#           <Right-Button> 		: Next Tree
+#           <Middle-Button> or <RETURN>	: Goto Item# in box
+#           <q>            		: Exit
+#           <p>                         : Generate Encapsulated Postscript 
+#					of current tree
+#
+# To browse corpora, type an item number in the upper left box,
+# and hit <RETURN> or <Middle-Button> on mouse
+#
+
+set nodefont "-adobe-helvetica-*-*-*--14-*-*-*-*-*-*-*"
+set subscript_font "-adobe-helvetica-*-*-*--14-*-*-*-*-*-*-*"
+
+set subscript_separator "_"
+set word_separator "\\+"
+set word_print_separator "_"
+set epsilon_char ""
+set feat_inter "\201"
+set feat_separator "\202"
+set feats ""
+set subscript_depth 6
+
+proc findmax {a b} {
+    if { $a > $b } {
+	return $a
+    } else {
+	return $b
+    }
+}
+
+proc findmin {a b} {
+    if { $a < $b } {
+	return $a
+    } else {
+	return $b
+    }
+} 
+
+proc findmaxdepth l {
+    set maxdepth 0
+    
+    if { [ llength $l ] == 0 } {
+	return 0
+    } else {
+	set children [ lrange $l 1 [ expr [ llength $l ] - 1 ] ]
+	foreach child $children {
+	    set maxdepth [ findmax $maxdepth [ findmaxdepth $child ] ]
+	}
+	
+	return [ expr $maxdepth + 1 ] 
+    }
+}
+
+
+proc countleaves tree {
+    if { [ llength $tree ] == 1 } {
+	return 1
+    } else {
+	set children [ lrange $tree 1 [ expr [ llength $tree ] - 1 ] ]
+	set numleaves 0
+	foreach child $children {
+	    set numleaves [ expr $numleaves + [ countleaves $child ] ]
+	}
+
+	return $numleaves
+    }
+}
+    
+proc assigncolor {text} {
+    set wordlist [ split $text ":" ]
+
+    set num1 [ lindex $wordlist 1 ]
+    set num2 [ lindex $wordlist 2 ]
+    set maxprob .5
+
+    if { [ expr [ expr $num1 >= 0 && $num1 <= $maxprob ] || [ expr $num2 >=0 && $num2 <= $maxprob ] ] } {
+	return "red";
+    }
+    
+    return "black";
+}
+
+proc write_node_label {c X Y stext anchor id} {
+    global nodefont subscript_font
+    global subscript_separator word_separator word_print_separator
+    global feat_separator feat_inter feats
+    global subscript_depth
+    global epsilon_char
+
+    set atext [ string trim $stext ]
+    set usefont $nodefont
+
+    set labelinfo [ split $atext $feat_separator ]
+    set text [ lindex $labelinfo 0 ]
+    set featinfo [ lindex $labelinfo 1 ]
+    regsub -all ($feat_inter) $featinfo " " featinfo
+    set feats [ concat $feats $featinfo ]
+
+    set nodelabel [ split $text $subscript_separator ]
+    if { [ llength $nodelabel ] == 0 } { 
+	return;
+    }
+    set nodetext [ lindex $nodelabel 0]
+    regsub -all ($word_separator) $nodetext $word_print_separator nodetext
+
+    if { [ string compare [ string range $nodetext 0 0 ] $epsilon_char ] == 0 } {
+        set nodetext [ concat "e" [ string range $nodetext 1 end ] ]
+    }
+
+    $c create text $X $Y -font $usefont -text $nodetext -anchor $anchor -tag label${id}
+    set bounding [ $c bbox label${id} ]
+    set sx [ lindex $bounding 2 ]
+    set sy [ lindex $bounding 3 ]
+    if { [ llength $nodelabel ] > 1 } {
+      set subscript [ lindex $nodelabel 1]
+      $c create text $sx [expr $sy + $subscript_depth] \
+              -font $subscript_font -text $subscript -anchor sw ;
+    } 
+}
+
+proc showleaf {text depth id} {
+
+    global curleafXposition YDIST XDIST
+
+    set Y [ expr $depth * $YDIST ]
+
+    write_node_label .c $curleafXposition $Y $text nw $id
+    # .c create text $curleafXposition $Y -text $text -anchor nw -tag label${id}
+
+    set boundingbox [ .c bbox label${id} ]
+    set width [ expr [ lindex $boundingbox 2 ] - [ lindex $boundingbox 0 ] ]
+
+    set oldX $curleafXposition
+    set curleafXposition [ expr $curleafXposition + $width + $XDIST ]
+    
+    # Return coordinates of the "center" of the button
+    return [ list [ expr $oldX + [ expr $width / 2 ] ] $Y ]
+}
+
+
+proc shownode {text X depth id childrenXY} {
+
+    global curleafXposition XDIST YDIST
+    
+    set Y [ expr $depth * $YDIST ]
+    
+    write_node_label .c $X $Y $text n $id
+    # .c create text $X $Y -text $text -anchor n -tag label${id}
+    
+    # bounding box has format x1 y1 x2 y2 
+
+    set boundingbox [ .c bbox label${id} ]
+    set parentheight [ expr [ lindex $boundingbox 3 ] - [ lindex $boundingbox 1 ] ]
+    set width [ expr [ lindex $boundingbox 2 ] - [ lindex $boundingbox 0 ] ]
+
+    set curleafXposition [ findmax [ expr $X + $width + $XDIST ] $curleafXposition ]
+
+    foreach child $childrenXY {
+	.c create line $X [ expr $Y + $parentheight ] [ lindex $child 0 ] [ lindex $child 1 ]
+    }
+
+    return [ list $X $Y ]
+}
+    
+
+proc isleaf tree {
+    return [ expr [ llength $tree ] == 1 ]
+}
+
+#
+# Returns (X,Y) list corresponding to position of top node in 'tree'
+#
+proc display {tree depth} {
+
+    global nodeid maxdepth
+
+    if { [ isleaf $tree ] == 1 } {
+	set nodeid [ expr $nodeid + 1 ]
+	#return [ showleaf $tree $maxdepth $nodeid ]
+	return [ showleaf $tree $depth $nodeid ]
+    } else {
+	set children [ lrange $tree 1 [ llength $tree ] ]
+	set XYlist {}
+
+	foreach child $children {
+	    set XY [ display $child [ expr $depth + 1 ] ] 
+	    
+	    lappend XYlist $XY
+	}
+	
+	#puts $XYlist
+	set numchildren [ llength $children ]
+	set first [ lindex $XYlist 0 ]
+	set last [ lindex $XYlist [ expr $numchildren - 1 ] ]
+	
+	set avgX [ expr [ expr [ lindex $first 0 ] + [ lindex $last 0 ] ] / 2 ]
+
+	set nodeid [ expr $nodeid + 1 ]
+
+	return [ shownode [ lindex $tree 0 ] $avgX $depth $nodeid $XYlist ]
+    }
+}
+	
+
+
+#
+# Vertical distance from top corner of node to top corner of child
+# 
+set YDIST 50
+
+#
+# Horiz distance between end of one leaf, beginning of next
+#
+set XDIST 32
+
+set XMARGIN 30
+
+proc doit {} {
+
+    global XMARGIN curleafXposition nodeid maxdepth YDIST XDIST corpus itemnumber maxheight
+
+    set feats ""
+    set line [ lindex $corpus $itemnumber ]
+
+    regsub -all "\\)" $line "\}" line
+    regsub -all "\\(" $line "\{" line
+
+    # remove one level of list embedding from original string
+    set tree [ lindex $line 0 ] 
+    set maxdepth [ findmaxdepth $tree ]    
+    set maxheight [ expr [ expr $maxdepth + 1 ] * $YDIST ]
+
+    canvas .c -yscrollcommand {.s set} -xscrollcommand { .s2 set } 
+
+    set curleafXposition $XMARGIN
+    set nodeid 0
+    #puts $tree
+    display $tree 0
+
+    # 1000 x 1000 seems like a good initial max viewing area
+    .c configure -scrollregion [ list 0 0 $curleafXposition $maxheight ] -height [ findmin 1000 $maxheight ] -width [ findmin 1000 $curleafXposition ]
+    pack .s -side left -fill y
+    pack .s2 -side bottom -fill x
+    pack .c -side left -expand yes -fill both
+ 
+    set labelht [ expr $maxheight - 18 ]
+    place .label -in .c -x 40 -y $labelht -anchor ne
+    place .entry -in .c -x 40 -y $labelht -anchor nw
+    .entry delete 0 [ string length [ .entry get ] ]
+    .entry insert 0 $itemnumber
+    raise .entry
+    raise .label
+
+    # No particular reason for this min size
+
+    wm minsize . 200 200 
+    wm maxsize . $curleafXposition $maxheight
+
+    #
+    # Remove focus from entry widget
+    focus .
+
+    bind . <KeyPress-q> { exit 0 }
+
+    bind . <KeyPress-f> { 
+	global fw fwparent destroyfeat feats
+	if [ catch {toplevel .fw}] {
+	    raise .fw 
+	} else {
+	    global nodefont
+	    wm title .fw [ concat "Features:" $itemnumber ]
+	    set displaytext [ join [ split $feats ";" ] "\n" ]
+            if { $displaytext == "" } {
+		set displaytext "No Features"
+            }
+	    set fwparent .fw
+
+	    eval {text $fwparent.msg \
+		    -font $nodefont -wrap none \
+		    -width 30 -height 20 \
+		    -yscrollcommand [list $fwparent.sy set] \
+		    -xscrollcommand [list $fwparent.sx set]}
+	    $fwparent.msg insert 1.0 $displaytext
+	    scrollbar $fwparent.sy -orient vertical \
+		    -command [list $fwparent.msg yview]
+	    # Create extra frame to hold pad and horizontal scrollbar
+	    frame $fwparent.bottom
+	    scrollbar $fwparent.sx -orient horizontal \
+		    -command [list $fwparent.msg xview]
+	    # Create padding based on the scrollbar width and border
+	    set pad [expr [$fwparent.sy cget -width] + 2* \
+		    ([$fwparent.sy cget -bd] + \
+		    [$fwparent.sy cget -highlightthickness])]
+	    frame $fwparent.pad -width $pad -height $pad
+	    # Arrange everything in the parent frame
+	    pack $fwparent.bottom -side bottom -fill x
+	    pack $fwparent.pad -in $fwparent.bottom -side right
+	    pack $fwparent.sx -in $fwparent.bottom -side bottom -fill x
+	    pack $fwparent.sy -side right -fill y
+	    pack $fwparent.msg -side left -fill both -expand true
+
+	    bind $fwparent <KeyPress-q> { set destroyfeat 1 }
+	    pack $fwparent.msg
+	    tkwait variable destroyfeat
+	    if { $destroyfeat } {
+		destroy $fwparent
+		set destroyfeat 0
+	    }
+	}
+    }
+
+    bind . <KeyPress-p> { 
+	global curleafXposition maxheight
+	
+	set filename [ join [ list $itemnumber ".eps" ] "" ]
+
+	set answer [ tk_dialog .ask "Print" [ join [ list "Generate Encapsulated Postscript to File: " $filename "?" ] ] "" 0 "Yes" "No" ]
+
+        set fontMap(-*-times-*-*-*-*-*-*) [ list Times 12 ]
+        set fontMap(-*-courier-*-*-*-*-*-*) [ list Courier 12 ]
+        set fontMap(-*-helvetica-*-*-*-*-*-*) [ list Courier 12 ]
+        set fontMap(fixed) [ list Courier 12 ]
+	
+	if { $answer == 0 } {
+	    .c postscript -fontmap fontMap -file $filename -x 0 -y 0 -width $curleafXposition -height $maxheight -rotate false
+# -pagewidth 10.5i
+	}
+    }
+    
+    bind .c <1> { 
+	global itemnumber
+	if { [ checkrange [ expr $itemnumber - 1 ] ] } {
+	    global destroyfeat
+	    set destroyfeat 1
+	    destroy .c  
+	    set itemnumber [ expr $itemnumber - 1 ]
+	    doit 
+	} 	
+    }
+
+	
+    bind .c <3> { 
+	global itemnumber
+	if { [ checkrange [ expr $itemnumber + 1 ] ] } {
+	    global destroyfeat
+	    set destroyfeat 1
+	    destroy .c  
+	    set itemnumber [ expr $itemnumber + 1 ]
+	    doit 
+	} 
+    }
+
+    bind .c <2> {
+	global itemnumber
+	if { [ checkvalid [ .entry get ] ] && [ checkrange [ .entry get ] ] } {
+	    global destroyfeat
+	    set destroyfeat 1
+	    destroy .c
+	    set itemnumber [ .entry get ]
+	    doit
+	}
+    }
+
+    bind .entry <KeyPress-Return> {
+	global itemnumber
+	if { [ checkvalid [ .entry get ] ] && [ checkrange [ .entry get ] ] } {
+	    global destroyfeat
+	    set destroyfeat 1
+	    destroy .c
+	    set itemnumber [ .entry get ]
+	    doit
+	}
+    }
+}
+
+proc checkrange itemnumber {
+    global corpus
+
+    if { $itemnumber < [ llength $corpus ] && $itemnumber >= 0 } {
+	return 1
+    } else {
+#	tk_dialog .error  "Out of Range" "That item is out of range!" "" "" "OK"
+	return 0
+    }
+}
+
+proc checkvalid number {
+    
+    if { [ regexp (^\[0-9\]+$) $number ] } {
+	return 1
+    } else {
+	tk_dialog .error "Invalid Number" "\"$number\" is not a valid number!" "" "" "OK"
+	return 0
+    }
+}	
+    
+
+    
+
+proc readall fileid {
+    
+    set corpus {}
+    
+    while { [ expr ! [ eof $fileid ] ] } {
+	set line [ gets $fileid ]
+	
+	if { ! [ expr { $line == "" } ] } {
+	    append corpus " "
+	    append corpus [ list $line ]
+	}
+	
+    }
+
+
+    return $corpus
+}
+
+
+
+set windowname $argv0
+append windowname ": "
+
+if { $argc == 1 } {
+    
+    set fileid [ open [ lindex $argv 0 ] r ]
+    append windowname [ lindex $argv 0 ]
+} else {
+    set fileid stdin
+    append windowname "STDIN"
+}
+
+
+
+set corpus [ readall $fileid ]
+
+#
+# Initialize scrollbar
+#
+scrollbar .s -command { .c yview } -orient vertical
+scrollbar .s2 -command { .c xview } -orient horizontal
+
+#
+# Initialize item counter
+#
+entry .entry -width 6 -relief sunken
+label .label -text "Item:"
+
+
+#
+# Set window name
+# 
+
+
+wm title . $windowname
+
+set itemnumber 0
+doit
+
+
+
+
+    
+    

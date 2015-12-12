@@ -1,0 +1,11 @@
+chmod u+w *.cpp
+chmod u+w *.h
+chmod u+w ./RCS/*
+for i in *.cpp; do (echo $i; cp /xtag/work/schuler/SynchTag/src/$i .); done
+for i in *.cpp; do (echo $i,v; cp /xtag/work/schuler/SynchTag/src/RCS/$i,v ./RCS); done
+for i in *.h; do (echo $i; cp /xtag/work/schuler/SynchTag/include/$i .); done
+for i in *.h; do (echo $i,v; cp /xtag/work/schuler/SynchTag/include/RCS/$i,v ./RCS); done
+perl -pi.orig -e "s/nl-headers/nl-headers-trunc/g" *.cpp
+chmod u-w *.cpp
+chmod u-w *.h
+chmod u-w ./RCS/*

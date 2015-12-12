@@ -1,0 +1,288 @@
+2001-8-22  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Folded in Moses' latest changes wrt Java server/client
+	architecture. 
+
+	* Updated makefiles for new src/server directory
+
+2001-7-25  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Updated perl scripts to be server friendly and autoflush stdout
+
+	* Changed slurp_feats.pl to be compatible with new checker output
+
+	* Changed input procedure for the featchecker to be compatible
+	with input streams
+
+2001-7-24  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed stdout and stderr buffering in syn_get
+
+2001-7-6   Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed stdout and stderr buffering in featchecker and parser. 
+
+2001-6-23  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+        * Fixed English grammar files
+
+        * Moses Kimanzi fixed xtag.browser behaviour with forests that
+	have no features 
+
+	* Fixed warnings in featchecker files
+
+2001-6-23  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed utilities that can be used to create small hand-written
+	grammars 
+
+2001-2-22  Moses Kimanzi  <kimanzi@linc.cis.upenn.edu>
+
+	* Added save derivation to browser
+
+2001-2-9   Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added cleaning of script dirs to top level makefile. 
+	
+2001-2-8   Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added grammar conversion for hand-written grammars. Accepts
+	files in the format of xtag.trees.dat, treenames.dat and
+	treefeats.dat and creates a grammar that can be used with the
+	parser. 
+	
+2001-1-30  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Improved interface between POS tagger and parser. Added
+	interface between runparser and tagger_filter which can be used in
+	general to pass extra material to the filtering process which can
+	occur before parsing.
+
+	* Moved select_deriv and remove_redundancy from ./bin into
+	./src/derivations
+
+	* Automated some distrib creation tasks
+
+2001-1-29  Rashmi Prasad  <rjprasad@linc.cis.upenn.edu>
+
+	* Added utility to prune dead nodes from a derivation forest which
+	can occur after running other pruning heuristics such as
+	select_deriv.pl
+
+2001-1-27  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added filter which runs an external POS Tagger and then filters
+	trees based on the postag assignments. This filter is in
+	src/filter/tagger_filter.pl
+
+2001-1-22  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* updated code within USE_PARSER_HEURISTICS in parser/hparse.c to
+	be compatible with other modifications in the parser
+
+2001-1-19  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Increased hash table size in featchecker/main-checker.cpp
+
+2000-12-22 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed bug in xviewtree.tk
+
+2000-12-15 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed bug in xtag.show.word when tree has one node
+	
+2000-12-14 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added count of all lex trees into src/dict/check_syntax.pl
+
+2000-12-4  Kate Forbes  <forbesk@unagi.cis.upenn.edu>
+
+	* Added interactive utility to prune derivations from a derivation
+	forest 
+
+2000-12-1  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Squashed once again the backptr bug that surfaced in the
+	ChangeLog entry for 2000-11-5. 
+
+2000-11-30 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed some bugs in xtag.show.word and improved the user
+	interface. 
+
+	* Changed Makefiles to allow user to define location of perl
+	binary. 
+	
+2000-11-29 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added utility "xtag.show.word" for viewing all elementary trees
+	(with features) selected by a particular word in the syntax file.
+
+2000-11-28 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed df2dot after addition of topfeats to forest
+
+2000-11-8  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added program xviewtree which draws elementary trees with proper
+	bitmaps for substitution, adjunction, etc. but is more lightweight
+	than bungee. Can be used to render user defined elementary trees
+	to eps.
+	
+2000-11-7  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added client/server handling to runparser and buffering control
+	of stdout and stderr to the parser using the prefs file.
+
+	* Copied over the porting notes for the french grammar developed
+	at Univ Paris 7 and related programs and files into the directory
+	lib/francais
+
+2000-11-7  William Schuler  <schuler@linc.cis.upenn.edu>
+
+	* Added capability to feature checker of printing only the
+	subforest whose trees match certain feature templates at the top
+	of the derivation.
+
+2000-11-5  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Fixed a bug in the parser which caused some valid derivations to
+	go unreported. Certain sub-derivations were left dangling in the
+	chart because some sub-derivations which violated the goal spans
+	were co-opting their position when assigning backptrs. This fixes
+	the bug pointed out by Naoki YOSHINAGA.
+
+	* Changed behaviour when reading input from syntax file or from
+	nbest input. Previously if a family or tree was not found in the
+	grammar, the entire entry was junked. Now it is more fault
+	tolerant, and attempts to continue with the remainder of the
+	syntax entry.
+
+2000-11-4  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Folded in several treebank processing tools into
+	src/treebank/. It takes a processed Treebank (like Fei Xia's
+	LeXtract which converts the Penn Treebank into derivation trees)
+	and produces a grammar defn and various counts from the corpus to
+	be used as model parameter values in a statistical parser.
+
+	* Added installation of various treebank grammar modules.
+
+2000-11-2  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added programs that checks consistency of the syntax flat file
+
+2000-11-1  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Improved simple_filter
+
+	* Upgraded the syn_db and prob_counts_db to BerkeleyDB 3.1
+
+2000-10-23 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Folded in the treebank grammar using the standard grammar
+	tools. The treebank syntax file requires running a special perl
+	program: ./lib/treebank/synify_etree.pl
+
+	* In order to better accomodate unknown words, the syndefault file
+	can now contain multiple default entries in the same format as
+	before.
+
+	* Fixed several steps in the installation and removed some warning
+	from the Linux compilation of files in ./src/parser/
+
+2000-10-18 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Changed grammar and lexicon conversion programs to be completely
+	language/grammar independent. All the input and output files are
+	now specified using files in the ./lib directory. Removed all
+	references to environment variables in these files.
+
+	* As a result, installation now does not require any environment
+	variables to be set for running the parser or the graphical
+	programs.
+	
+2000-10-16 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added capability to separate syn db access (picking trees for
+	each word in a sentence) from the parser itself. The parser
+	accepts a list of lexicalized trees for each sentence in
+	stdin. This allows insertion of arbitrary filters between syn
+	access and parsing.
+
+	* Implemented a simple filter in src/filter/filter.pl
+
+	* Added options in runparser to run the parser with user defined
+	filters between syn access and parsing.
+
+	* Changed install scripts. Added installation options for a
+	binary-only distribution for Linux and Solaris.
+	
+2000-10-15 Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* The top-down prediction of the span of each item in head corner
+	parser is now sensitive to the spans of its goal item. Now longer
+	sentences can be parsed much faster.
+
+	* Fixed a bug in the top-down prediction of substitution nodes in
+	a subtree where there can be possible adjunctions on intermediate
+	nodes dominating the subst node.
+
+	* Improved handling of selective prediction of left aux and right
+	aux trees. Also sped up this processing by caching leftaux and
+	rightaux values for treenodes (in hparse_hand).
+
+2000-10-6  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Removed fixed size input buffers and made their size
+	configurable at runtime using the prefs file.
+
+2000-10-5  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Made a generic handler for preferences throughout the
+	parser. Now prefs are loaded up from a file at runtime. This means
+	that we no longer have to recompile to switch between different
+	types of grammars or most kinds of parsing behaviour.
+
+2000-10-4  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added capability to switch between the traditional definition of
+	adjunction with exactly one adjunction per treenode to the
+	alternative definition which allows multiple adjunctions per
+	treenode. The extraction of derived trees from the forest has to
+	be sensitive to which definition of adjunction is being
+	used. Added a runtime flag to print_deriv which makes this
+	explicit. 
+
+2000-9-28  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Moved new version of feature checker into lem/src directory
+	hierarchy. Now the parser and checker are in a unified
+	distribution package. 
+
+2000-9-27  Anoop Sarkar  <anoop@linc.cis.upenn.edu>
+
+	* Added toplabels.dat to the grammar defn. It contains all TOP
+	category labels, previously hard-coded which also includes the
+	feature structure for the top label.
+
+	* Added syndefault.dat to the grammar defn. It contains the
+	default syn entry, previously hard-coded in the parser.
+
+	* PRO is now displayed correctly in the derived trees.
+
+	* Using toplabels.dat the parser now correctly assigns a start
+	feature for each derivation. The feature checker was also updated
+	to perform this extra unification at the root of the derivation
+	tree. 
+
+	* Fixed bug in src/dict/synify.pl which caused erroneous entries
+	with duplicated words in the <<ENTRY>> field in the syntax file.
+
+	* replaced shell parser wrappers with a general perl script called
+	runparser 
+
+	* created ChangeLog
+
+

@@ -1,0 +1,62 @@
+
+# Keyboard and mouse bindings for bungee
+# Anoop Sarkar
+# <anoop@linc.cis.upenn.edu>
+
+You will never need to call bungee directly. There are two wrapper 
+scripts for bungee:
+
+1. xtag.show <lang> <regexp>
+
+  xtag.show can be used to view individual trees from the grammar.
+  Any regular expression <regexp> can be used to match the tree names.
+
+  e.g. xtag.show english ^betaN[0-9]* will display all the relative
+  clause trees
+
+2. xtag.show.fam <lang> <regexp1> <regexp2>
+
+  xtag.show.fam can be used to view trees in families from the
+  grammar.  Any tree family that matches <regexp1> and then each tree
+  in that family which matches <regexp2> is displayed.
+
+  e.g. xtag.show.fam english ^Tnx0Vnx1$ ^alphaW[0-1]* will display all
+  wh-extraction trees from the transitive tree family
+
+3. xtag.show.word <lang> <word> [<regexp>]
+
+   xtag.show.word can be used to view all trees lexicalized by
+   <word>. In addition, the list of all such trees can be filtered by
+   using the optional <regexp> parameter. Use ".*" if you want to see
+   all selected trees.
+
+   e.g. xtag.show.word english make "\[make\]" will show only those
+   trees anchored by the single word "make", i.e. it will ignore
+   multiply anchored trees for "make". To see all trees run the
+   command xtag.show.word english make ".*"
+
+Using the tree display:
+
+1, 2 and 3 stand for left, right and middle mouse buttons respectively.
+
+Listbox window
+--------------
+	<Double-Button-1> => displays item
+
+Display window
+--------------
+	<1>          => moves to preceding item
+	<3>          => moves to following item
+	<2>          => jumps to item named in Item entry
+	<KeyPress-f> => shows features
+	<KeyPress-q> => exits program
+	<KeyPress-p> => saves encapsulated postscript to file
+
+Feature window
+--------------
+	<KeyPress-q> => destroys feature window
+	<KeyPress-p> => saves features to file as text
+
+N.B: The greek letters alpha and beta in the tree names are represented
+in the tree names as a "alpha" and "beta" prefix of the name respectively.
+

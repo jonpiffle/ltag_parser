@@ -1,9 +1,10 @@
-import nltk, json
+import nltk, json, re
 import shlex, subprocess
 from nltk.corpus.util import LazyCorpusLoader
 from nltk.corpus.reader import CategorizedBracketParseCorpusReader
 from nltk.tree import Tree, ParentedTree, ImmutableTree
 from parseval import parseval
+import matplotlib.pyplot as plt
 
 def flip_word_pos(lst):
     return [(pos, word) for word, pos in lst]
@@ -78,8 +79,9 @@ def parser_output_to_parse_deriv_trees(output):
     lines = output.strip().split("\n")
     deriv_tree_lines = lines[::2]
     parse_tree_lines = lines[1::2]
-    parse_trees = [Tree.fromstring(line.replace('\x06', 'epsilon_')) for line in parse_tree_lines]
-    deriv_trees = [Tree.fromstring(line) for line in deriv_tree_lines]
+
+    parse_trees = [Tree.fromstring(line.replace('\x06', 'epsilon_')) for line in parse_tree_lines if line != '']
+    deriv_trees = [Tree.fromstring(line) for line in deriv_tree_lines if line != '']
     return parse_trees, deriv_trees
 
 def run_parser(sent, tagged_filename):
@@ -87,13 +89,29 @@ def run_parser(sent, tagged_filename):
     echo '%s' | \
     bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | \
     bin/tagger_filter %s | \
-    bin/nbest_parser.bin data/english/english.grammar lib/xtag.prefs | \
-    bin/print_deriv -b" % (sent, tagged_filename)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
+    bin/nbest_parser.bin data/english/english.grammar lib/xtag.prefs" % (sent, tagged_filename)
+    count_cmd = cmd + " | bin/count_derivations"
+    print_cmd = cmd + " | bin/print_deriv -b" 
+    p = subprocess.Popen(count_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
     output, err = p.communicate()
-    return parser_output_to_parse_deriv_trees(output)
+
+    count_str = re.search('count=(\d+)', output)
+    if count_str is None:
+        print(0)
+        return [], []
+
+    num_derivations = int(count_str.group(1))
+    print(num_derivations)
+
+    if num_derivations < 15000:
+        p = subprocess.Popen(print_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
+        output, err = p.communicate()
+        return parser_output_to_parse_deriv_trees(output)
+    else:
+        return [], []
 
 def get_subtree_set(tree):
+    #subtree_set = set([tuple([l for l in i.leaves()]) for i in tree.subtrees(filter=lambda s: s.height() >= 3)])
     subtree_set = set([tuple([l for l in i.leaves() if 'epsilon_' not in l]) for i in tree.subtrees(filter=lambda s: s.height() >= 3)])
     return subtree_set
 
@@ -103,8 +121,11 @@ def distance(tree1, tree2):
 
     precision = 1 - (len(subtree_set1 - subtree_set2) / float(len(subtree_set1)))
     recall = 1 - (len(subtree_set2 - subtree_set1) / float(len(subtree_set2)))
-    fscore = 2 * precision * recall / (precision + recall)
 
+    if precision + recall == 0:
+        return 0
+
+    fscore = 2 * precision * recall / (precision + recall)
     return fscore
 
 if __name__ == '__main__':
@@ -113,30 +134,24 @@ if __name__ == '__main__':
         cat_file='allcats.txt', tagset='wsj')
 
     corpus = zip(ptb.fileids(), ptb.parsed_sents(), ptb.tagged_sents())
-    sent_num = 0
-    for i, (fileid, parse, tagged) in enumerate(corpus):
-        filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + ".txt"
-        if i > sent_num:
-            exit()
-        elif i == sent_num:
-            pass
-        else:
-            continue
+    lens = [len(t) for t in ptb.tagged_sents()]
+    print(len([l for l in lens if l <= 25]))
+    #plt.hist(lens, 50)
+    #plt.show()
 
+    for i, (fileid, parse, tagged) in enumerate(corpus):
+        if len(tagged) > 25:
+            continue
+        print(fileid, len(tagged))
+        filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + str(i) + ".txt"
         tagged = flip_word_pos(tagged)
         tagged = merge_tagged_nnps(tagged)
         sent = tagged_to_sent(tagged)
         parse = merge_tree_nnps(parse)
         gold_tree = parse
-        #gold_tree.draw()
-        #print(parse)
-        #print(tagged)
-        #print(sent_to_str(sent))
-        #print(tagged_sent_to_str(tagged))
         tagged_filename = create_tmp_tagged_file(tagged_sent_to_str(tagged))
 
         parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename)
-        print(len(parse_trees), len(deriv_trees))
         trees = zip(parse_trees, deriv_trees)
 
         best_parse, best_deriv, best_val = None, None, 0
@@ -144,12 +159,10 @@ if __name__ == '__main__':
             val = distance(test_parse_tree, gold_tree)
             if val > best_val:
                 best_parse, best_deriv, best_val = test_parse_tree, test_deriv_tree, val
-                #test_parse_tree.draw()
-                #test_deriv_tree.draw()
-        print('BEST:', best_val)
-        best_parse.draw()
-        best_deriv.draw()
+        #print('BEST:', best_val)
+        #best_parse.draw()
+        #best_deriv.draw()
         tree_dict = {"parse": str(best_parse), "deriv": str(best_deriv)}
         with open(filename, 'w') as f:
             f.write(json.dumps(tree_dict))
-        exit()
+        #exit()

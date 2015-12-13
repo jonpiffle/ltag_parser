@@ -171,6 +171,6 @@ if __name__ == '__main__':
     processes = 8
     print('parsed_sents', len(ptb.parsed_sents()))
     corpus = zip(ptb.parsed_sents(), ptb.tagged_sents())
-    params = [(i, parse, tagged) for i, (fileid, parse, tagged) in enumerate(corpus)]
+    params = [(i, parse, tagged) for i, (parse, tagged) in enumerate(corpus)]
     p = Pool(processes)
     p.starmap(get_best_parse, params)

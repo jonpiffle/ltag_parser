@@ -5,6 +5,7 @@ from nltk.corpus.reader import CategorizedBracketParseCorpusReader
 from nltk.tree import Tree, ParentedTree, ImmutableTree
 from parseval import parseval
 import matplotlib.pyplot as plt
+from multiprocessing import Pool
 
 def flip_word_pos(lst):
     return [(pos, word) for word, pos in lst]
@@ -128,41 +129,43 @@ def distance(tree1, tree2):
     fscore = 2 * precision * recall / (precision + recall)
     return fscore
 
+def get_best_parse(i, fileid, parse, tagged):
+    if len(tagged) > 25:
+        return
+
+    print(fileid, len(tagged))
+    filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + "_" + str(i) + ".txt"
+    tagged = flip_word_pos(tagged)
+    tagged = merge_tagged_nnps(tagged)
+    sent = tagged_to_sent(tagged)
+    parse = merge_tree_nnps(parse)
+    gold_tree = parse
+    tagged_filename = create_tmp_tagged_file(tagged_sent_to_str(tagged))
+
+    parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename)
+    trees = zip(parse_trees, deriv_trees)
+
+    best_parse, best_deriv, best_val = None, None, 0
+    for test_parse_tree, test_deriv_tree in trees:
+        val = distance(test_parse_tree, gold_tree)
+        if val > best_val:
+            best_parse, best_deriv, best_val = test_parse_tree, test_deriv_tree, val
+    #print('BEST:', best_val)
+    #best_parse.draw()
+    #best_deriv.draw()
+    tree_dict = {"parse": str(best_parse), "deriv": str(best_deriv)}
+    with open(filename, 'w') as f:
+        f.write(json.dumps(tree_dict))
+
 if __name__ == '__main__':
     ptb = LazyCorpusLoader( # Penn Treebank v3: WSJ portions
         'ptb', CategorizedBracketParseCorpusReader, r'wsj/\d\d/wsj_\d\d\d\d.mrg',
         cat_file='allcats.txt', tagset='wsj')
 
-    corpus = zip(ptb.fileids(), ptb.parsed_sents(), ptb.tagged_sents())
     lens = [len(t) for t in ptb.tagged_sents()]
-    print(len([l for l in lens if l <= 25]))
-    #plt.hist(lens, 50)
-    #plt.show()
 
-    for i, (fileid, parse, tagged) in enumerate(corpus):
-        if len(tagged) > 25:
-            continue
-        print(fileid, len(tagged))
-        filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + "_" + str(i) + ".txt"
-        tagged = flip_word_pos(tagged)
-        tagged = merge_tagged_nnps(tagged)
-        sent = tagged_to_sent(tagged)
-        parse = merge_tree_nnps(parse)
-        gold_tree = parse
-        tagged_filename = create_tmp_tagged_file(tagged_sent_to_str(tagged))
-
-        parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename)
-        trees = zip(parse_trees, deriv_trees)
-
-        best_parse, best_deriv, best_val = None, None, 0
-        for test_parse_tree, test_deriv_tree in trees:
-            val = distance(test_parse_tree, gold_tree)
-            if val > best_val:
-                best_parse, best_deriv, best_val = test_parse_tree, test_deriv_tree, val
-        #print('BEST:', best_val)
-        #best_parse.draw()
-        #best_deriv.draw()
-        tree_dict = {"parse": str(best_parse), "deriv": str(best_deriv)}
-        with open(filename, 'w') as f:
-            f.write(json.dumps(tree_dict))
-        #exit()
+    processes = 4
+    corpus = zip(ptb.fileids(), ptb.parsed_sents(), ptb.tagged_sents())
+    params = [(i, fileid, parse, tagged) for i, (fileid, parse, tagged) in enumerate(corpus)]
+    p = Pool(processes)
+    p.starmap(get_best_parse, params)

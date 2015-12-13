@@ -73,8 +73,8 @@ def tagged_sent_to_str(tagged_sent):
 def remove_none_from_tagged(tagged):
     return [(pos, word) for pos, word in tagged if pos != "-NONE-"]
 
-def create_tmp_tagged_file(tagged_str):
-    filename = 'test/tmp.tagged'
+def create_tmp_tagged_file(fileid, i, tagged_str):
+    filename = 'test/tagged/%s_%d.tagged' % (fileid.split('/')[-1].split('.')[0], i)
     with open('../' + filename, 'w') as f:
         f.write(tagged_str + '\n')
     return filename
@@ -102,6 +102,8 @@ def run_parser(sent, tagged_filename, max_derivations=15000):
     count_str = re.search('count=(\d+)', output)
     if count_str is None:
         print('no count_str found')
+        print('output', output)
+        print('error', err)
         return [], []
 
     num_derivations = int(count_str.group(1))
@@ -136,7 +138,7 @@ def get_best_parse(fileid, i, parse, tagged, max_len=30):
     if len(tagged) > max_len:
         return
 
-    print(i, len(tagged), len(parse))
+    print(fileid, i, len(tagged), len(parse))
 
     filename = 'parse_trees/%s_%d.txt' % (fileid.split('/')[-1].split('.')[0], i)
     tagged = flip_word_pos(tagged)
@@ -149,7 +151,7 @@ def get_best_parse(fileid, i, parse, tagged, max_len=30):
     except IndexError:
         return
 
-    tagged_filename = create_tmp_tagged_file(tagged_sent_to_str(tagged))
+    tagged_filename = create_tmp_tagged_file(fileid, i, tagged_sent_to_str(tagged))
     parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename)
     trees = zip(parse_trees, deriv_trees)
 

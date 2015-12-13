@@ -158,8 +158,9 @@ def get_best_parse(i, parse, tagged):
     #best_parse.draw()
     #best_deriv.draw()
     tree_dict = {"parse": str(best_parse), "deriv": str(best_deriv)}
-    with open(filename, 'w') as f:
-        f.write(json.dumps(tree_dict))
+    if best_parse is not None:
+        with open(filename, 'w') as f:
+            f.write(json.dumps(tree_dict))
 
 if __name__ == '__main__':
     ptb = LazyCorpusLoader( # Penn Treebank v3: WSJ portions

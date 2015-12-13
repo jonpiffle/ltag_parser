@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
     lens = [len(t) for t in ptb.tagged_sents()]
 
-    processes = 4
+    processes = 8
     print('parsed_sents', len(ptb.parsed_sents()))
     corpus = zip(ptb.parsed_sents(), ptb.tagged_sents())
     params = [(i, parse, tagged) for i, (fileid, parse, tagged) in enumerate(corpus)]

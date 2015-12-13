@@ -143,7 +143,7 @@ if __name__ == '__main__':
         if len(tagged) > 25:
             continue
         print(fileid, len(tagged))
-        filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + str(i) + ".txt"
+        filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + "_" + str(i) + ".txt"
         tagged = flip_word_pos(tagged)
         tagged = merge_tagged_nnps(tagged)
         sent = tagged_to_sent(tagged)

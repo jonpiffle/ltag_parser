@@ -129,16 +129,20 @@ def distance(tree1, tree2):
     fscore = 2 * precision * recall / (precision + recall)
     return fscore
 
-def get_best_parse(i, fileid, parse, tagged):
+def get_best_parse(i, parse, tagged):
     if len(tagged) > 25:
         return
 
-    print(fileid, len(tagged))
-    filename = 'parse_trees/' + fileid.split("/")[-1].split(".")[0] + "_" + str(i) + ".txt"
+    print(i, len(tagged))
+    filename = 'parse_trees/' + str(i) + ".txt"
     tagged = flip_word_pos(tagged)
+
     tagged = merge_tagged_nnps(tagged)
     sent = tagged_to_sent(tagged)
-    parse = merge_tree_nnps(parse)
+    try:
+        parse = merge_tree_nnps(parse)
+    except IndexError:
+        return
     gold_tree = parse
     tagged_filename = create_tmp_tagged_file(tagged_sent_to_str(tagged))
 
@@ -165,7 +169,8 @@ if __name__ == '__main__':
     lens = [len(t) for t in ptb.tagged_sents()]
 
     processes = 4
-    corpus = zip(ptb.fileids(), ptb.parsed_sents(), ptb.tagged_sents())
-    params = [(i, fileid, parse, tagged) for i, (fileid, parse, tagged) in enumerate(corpus)]
+    print('parsed_sents', len(ptb.parsed_sents()))
+    corpus = zip(ptb.parsed_sents(), ptb.tagged_sents())
+    params = [(i, parse, tagged) for i, (fileid, parse, tagged) in enumerate(corpus)]
     p = Pool(processes)
     p.starmap(get_best_parse, params)

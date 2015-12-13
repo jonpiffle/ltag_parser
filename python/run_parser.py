@@ -88,7 +88,7 @@ def parser_output_to_parse_deriv_trees(output):
     deriv_trees = [Tree.fromstring(line) for line in deriv_tree_lines if line != '']
     return parse_trees, deriv_trees
 
-def run_parser(sent, tagged_filename):
+def run_parser(sent, tagged_filename, max_derivations=15000):
     cmd = "cd ..; \
     echo '%s' | \
     bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | \
@@ -98,18 +98,16 @@ def run_parser(sent, tagged_filename):
     print_cmd = cmd + " | bin/print_deriv -b" 
     p = subprocess.Popen(count_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
     output, err = p.communicate()
-    print('output:', output)
-    print('err:', err)
 
     count_str = re.search('count=(\d+)', output)
     if count_str is None:
-        print(0)
+        print('no count_str found')
         return [], []
 
     num_derivations = int(count_str.group(1))
-    print(num_derivations)
+    print('derivations:', num_derivations)
 
-    if num_derivations < 15000:
+    if num_derivations < max_derivations:
         p = subprocess.Popen(print_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
         output, err = p.communicate()
         return parser_output_to_parse_deriv_trees(output)
@@ -134,8 +132,8 @@ def distance(tree1, tree2):
     fscore = 2 * precision * recall / (precision + recall)
     return fscore
 
-def get_best_parse(fileid, i, parse, tagged):
-    if len(tagged) > 30:
+def get_best_parse(fileid, i, parse, tagged, max_len=30):
+    if len(tagged) > max_len:
         return
 
     print(i, len(tagged), len(parse))
@@ -166,8 +164,8 @@ def get_best_parse(fileid, i, parse, tagged):
         with open(filename, 'w') as f:
             f.write(json.dumps(tree_dict))
 
-def parse_wsj_file(ptb, fileid):
-    corpus = zip(ptb.parsed_sents(fileid), ptb.tagged_sents(fileid))
+def parse_wsj_file(fileid, parsed, tagged):
+    corpus = zip(parsed, tagged)
     for i, parse, tagged in enumerate(corpus):
         get_best_parse(fileid, i, parse, tagged)
 
@@ -176,9 +174,15 @@ def parse_wsj(processes=8):
         'ptb', CategorizedBracketParseCorpusReader, r'wsj/\d\d/wsj_\d\d\d\d.mrg',
         cat_file='allcats.txt', tagset='wsj')
 
-    fileids = ptb.fileids()
+    fileids = ptb.fileids()[:10]
+    params = []
+    for f in fileids:
+        corpus = zip(ptb.parsed_sents(f), ptb.tagged_sents(f))
+        for i, (parsed, tagged) in enumerate(corpus):
+            params.append((f, i, parsed, tagged))
+
     p = Pool(processes)
-    p.starmap(parse_wsj, fileids)
+    p.starmap(get_best_parse, params)
 
 if __name__ == '__main__':
-    parse_wsj(1)
+    parse_wsj(2)

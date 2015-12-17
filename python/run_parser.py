@@ -71,7 +71,7 @@ def tagged_sent_to_str(tagged_sent):
     return " ".join([word + '_' + pos for pos, word in tagged_sent])
 
 def remove_none_from_tagged(tagged):
-    return [(pos, word) for pos, word in tagged if pos != "-NONE-"]
+    return [(pos, word) for pos, word in tagged if pos not in ( "-NONE-", '``', '""', "''")]
 
 def create_tmp_tagged_file(fileid, i, tagged_str):
     filename = 'test/tagged/%s_%d.tagged' % (fileid.split('/')[-1].split('.')[0], i)
@@ -88,9 +88,9 @@ def parser_output_to_parse_deriv_trees(output):
     deriv_trees = [Tree.fromstring(line) for line in deriv_tree_lines if line != '']
     return parse_trees, deriv_trees
 
-def run_parser(sent, tagged_filename, max_derivations=15000):
+def run_parser(sent, tagged_filename, max_derivations=30000):
     cmd = "cd ..; \
-    echo '%s' | \
+    echo \"%s\" | \
     bin/syn_get.bin data/english/english.grammar lib/xtag.prefs | \
     bin/tagger_filter %s | \
     bin/nbest_parser.bin data/english/english.grammar lib/xtag.prefs" % (sent, tagged_filename)
@@ -104,6 +104,7 @@ def run_parser(sent, tagged_filename, max_derivations=15000):
         print('no count_str found')
         print('output', output)
         print('error', err)
+        print(sent)
         return [], []
 
     num_derivations = int(count_str.group(1))
@@ -141,6 +142,10 @@ def get_best_parse(fileid, i, parse, tagged, max_len=30):
     print(fileid, i, len(tagged), len(parse))
 
     filename = 'parse_trees/%s_%d.txt' % (fileid.split('/')[-1].split('.')[0], i)
+    
+    if os.path.exists(filename):
+        return 
+
     tagged = flip_word_pos(tagged)
     tagged = remove_none_from_tagged(tagged)
     tagged = merge_tagged_nnps(tagged)
@@ -176,7 +181,7 @@ def parse_wsj(processes=8):
         'ptb', CategorizedBracketParseCorpusReader, r'wsj/\d\d/wsj_\d\d\d\d.mrg',
         cat_file='allcats.txt', tagset='wsj')
 
-    fileids = ptb.fileids()[:10]
+    fileids = ptb.fileids()
     params = []
     for f in fileids:
         corpus = zip(ptb.parsed_sents(f), ptb.tagged_sents(f))
@@ -184,7 +189,7 @@ def parse_wsj(processes=8):
             params.append((f, i, parsed, tagged))
 
     p = Pool(processes)
-    p.starmap(get_best_parse, params)
+    p.starmap(get_best_parse, sorted(params, key=lambda x: (x[0], x[1])))
 
 if __name__ == '__main__':
-    parse_wsj(2)
+    parse_wsj(8)

@@ -1,4 +1,4 @@
-import nltk, json, re
+import nltk, json, re, os
 import shlex, subprocess
 from nltk.corpus.util import LazyCorpusLoader
 from nltk.corpus.reader import CategorizedBracketParseCorpusReader
@@ -142,8 +142,10 @@ def get_best_parse(fileid, i, parse, tagged, max_len=30):
     print(fileid, i, len(tagged), len(parse))
 
     filename = 'parse_trees/%s_%d.txt' % (fileid.split('/')[-1].split('.')[0], i)
+    failed_parse_filename = filename.replace('parse_trees', 'failed_parse_trees')
     
-    if os.path.exists(filename):
+    if os.path.exists(filename) or os.path.exists(failed_parse_filename):
+        print('parse already exists')
         return 
 
     tagged = flip_word_pos(tagged)
@@ -170,6 +172,9 @@ def get_best_parse(fileid, i, parse, tagged, max_len=30):
     if best_parse is not None:
         with open(filename, 'w') as f:
             f.write(json.dumps(tree_dict))
+    else:
+        with open(failed_parse_filename, 'w') as f:
+            f.write(json.dumps(tree_dict))
 
 def parse_wsj_file(fileid, parsed, tagged):
     corpus = zip(parsed, tagged)
@@ -192,4 +197,4 @@ def parse_wsj(processes=8):
     p.starmap(get_best_parse, sorted(params, key=lambda x: (x[0], x[1])))
 
 if __name__ == '__main__':
-    parse_wsj(8)
+    parse_ws(16)

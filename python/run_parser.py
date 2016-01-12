@@ -241,10 +241,15 @@ def get_best_parse(fileid, i, parse, tagged):
 
     filename = 'parse_trees/%s_%d.txt' % (fileid.split('/')[-1].split('.')[0], i)
     parser_output_filename = 'parser_output/%s_%d.txt' % (fileid.split('/')[-1].split('.')[0], i)
+    timeout = 300
     
     if os.path.exists(filename):
-        print('parse already exists')
-        return 
+        tree_dict =  json.load(open(filename, 'r'))
+        if 'error' in tree_dict and tree_dict['error'] == "ParserTimeout" and str(timeout) not in tree_dict['message']:
+            pass
+        else:
+            print('parse already exists')
+            return 
 
     tagged = flip_word_pos(tagged)
     tagged = remove_none_from_tagged(tagged)
@@ -264,7 +269,7 @@ def get_best_parse(fileid, i, parse, tagged):
     tagged_filename = create_tmp_tagged_file(fileid, i, tagged_sent_to_str(tagged))
 
     error = {'type': None, 'message': None}
-    parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename, parser_output_filename, max_derivations=30000, timeout=180, error=error)
+    parse_trees, deriv_trees = run_parser(sent_to_str(sent), tagged_filename, parser_output_filename, max_derivations=30000, timeout=timeout, error=error)
 
     if error['type'] is not None:
         tree_dict = error

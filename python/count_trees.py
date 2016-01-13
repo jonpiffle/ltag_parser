@@ -43,7 +43,7 @@ def count_corpus(treedir='parse_trees', count_file='tree_counts.txt'):
     for treefile in glob.glob(treedir + '/*.txt'):
         tree_dict = json.load(open(treefile, 'r'))
 
-        if 'deriv' not in tree_dict:
+        if 'deriv' not in tree_dict or tree_dict['deriv'] == 'None':
             continue
 
         parses += 1
@@ -87,6 +87,19 @@ def have_tree_semantics(deriv_tree, tree_set):
         if tree_name not in tree_set:
             return False
     return True
+
+def count_successful_parses(treedir='parse_trees'):
+    result_counts = defaultdict(int)
+
+    for treefile in glob.glob(treedir + '/*.txt'):
+        tree_dict = json.load(open(treefile, 'r'))
+
+        if 'type' not in tree_dict:
+            tree_dict['type'] = 'success'
+
+        result_counts[tree_dict['type']] += 1 
+
+    print(result_counts)
 
 def parse_deriv_semantics(treedir='parse_trees'):
     tree_set = set([
@@ -163,23 +176,23 @@ def count_semantic_parses(treedir='parse_trees'):
         "alphanx0N1", # 619,
         "betaCOMPs", # 607,
         "alphanx0V", # 345,
-        #"betanx1CONJnx2", # 656,
-        #"betavxPs", # 614,
-        #"betas1CONJs2", # 584,
-        #"betaN1nx1V", # 576,
+        "betanx1CONJnx2", # 656,
+        "betavxPs", # 614,
+        "betas1CONJs2", # 584,
+        "betaN1nx1V", # 576,
         #"betavxARB", # 564,
-        #"alphanx1V-PRO", # 522,
-        #"alphas0N1", # 489,
-        #"alphaN1s0", # 478,
+        "alphanx1V-PRO", # 522,
+        "alphas0N1", # 489,
+        "alphaN1s0", # 478,
         #"betaN0nx0Vnx1", # 416,
         #"betaPUs", # 389,
-        #"alphaPu", # 378,
+        "alphaPu", # 378,
         #"betan1CONJn2", # 355,
         #"alphaN", # 355,
         #"betaN0nx0Pnx1", # 327,
         #"betaARBs", # 322,
-        #"alphanx2Vnx1", # 303,
-        #"alphas0Ax1", # 295,
+        "alphanx2Vnx1", # 303,
+        "alphas0Ax1", # 295,
         #"betaARBa", # 275,
         #"betaN0nx0N1", # 270,
         #"betanx0Vs1-PRO", # 263,
@@ -431,7 +444,8 @@ def count_semantic_parses(treedir='parse_trees'):
     print('Number of trees with semantic parses: ', count)
 
 if __name__ == '__main__':
-    count_corpus()
+    #count_corpus()
     #investigate_counts()
-    #count_semantic_parses()
+    count_semantic_parses()
     #parse_deriv_semantics()
+    count_successful_parses()

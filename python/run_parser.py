@@ -174,10 +174,15 @@ def handle_parser_output(parser_output_filename, max_derivations, error):
         error["message"] = "Parser ran without error, but no parses found"
         return [], []
 
-    if num_derivations > max_derivations:
-        return sample_trees_from_parser_output(parser_output_filename)
-    else:
-        return all_trees_from_parser_output(parser_output_filename)
+    try:
+        if num_derivations > max_derivations:
+            return sample_trees_from_parser_output(parser_output_filename)
+        else:
+            return all_trees_from_parser_output(parser_output_filename)
+    except Exception as e:
+        error["type"] = "ReadingTreeOutputFailed"
+        error["message"] = str(e)
+        return [], []
 
 def run_parser(sent, tagged_filename, parser_output_filename, timeout=360, max_derivations=30000, error=None):
     # Run parser and get intermediate output

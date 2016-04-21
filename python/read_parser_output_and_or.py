@@ -1,4 +1,4 @@
-import re, nltk
+import re, nltk, sys
 import graphviz as gv
 import itertools
 import operator
@@ -6,17 +6,21 @@ import operator
 from collections import deque
 from functools import reduce
 
+from xtag_verbnet.grammar import Grammar
+
+XTAG_GRAMMAR = Grammar.load()
+
+def flatten(lst_of_lsts):
+    return [a for lst in lst_of_lsts for a in lst]
+
 def prod(iterable):
     return reduce(operator.mul, iterable, 1)
 
 class DerivationForestParser(object):
-    total_count = 0
-    in_dict_count = 0
-
     @classmethod
     def fromstring(cls, node_id, node_str_dict, node_dict, parent_pos=""):
-        if node_id in node_dict:
-            return node_dict[node_id]
+        #if node_id in node_dict:
+        #    return node_dict[node_id]
 
         node_string = node_str_dict[node_id]
         split = node_string.split()
@@ -94,12 +98,43 @@ class DerivationForestParser(object):
         return start_node
 
 class Node(object):
+    def draw(self):
+        root = nltk.Tree(str(self), [])
+        queue = deque([(c, root) for c in self.children])
+        while len(queue):
+            node, parent = queue.popleft()
+            tree = nltk.Tree(str(node), [])
+            parent.append(tree)
+            if len(node.children) > 0:
+                queue += [(c, tree) for c in node.children]
+        root.draw()
+
     def find(self, label):
         found = []
         queue = deque([self])
         while len(queue) > 0:
             node = queue.popleft()
             if str(node) == label:
+                found.append(node)
+            queue += [c for c in node.children]
+        return found
+
+    def find_by_type(self, node_type):
+        found = []
+        queue = deque([self])
+        while len(queue) > 0:
+            node = queue.popleft()
+            if node.node_type == node_type:
+                found.append(node)
+            queue += [c for c in node.children]
+        return found
+
+    def get_parents(self, child):
+        found = []
+        queue = deque([self])
+        while len(queue) > 0:
+            node = queue.popleft()
+            if child in node.children:
                 found.append(node)
             queue += [c for c in node.children]
         return found
@@ -117,13 +152,11 @@ class OrNode(Node):
         self.node_id = ",".join(sorted([c.node_id for c in children]))
 
     def deriv_trees(self):
-        return [d for c in self.children for d in c.deriv_trees()]
+        child_derivs = [c.deriv_trees() for c in self.children]
+        return flatten(child_derivs)
 
     def count_derivations(self):
         return sum([c.count_derivations() for c in self.children])
-
-    def two_or_children(self):
-        return any([c.two_or_children() for c in self.children])
 
     def collapse_nodes(self, parent):
         has_root_child = False
@@ -150,17 +183,20 @@ class AndNode(Node):
         self.node_type = node_type
         self.parent_pos = parent_pos
         self.children = children
+        self.derivs = None
 
-    def draw(self):
-        root = nltk.Tree(str(self.node_id), [])
-        queue = deque([(c, root) for c in self.children])
-        while len(queue):
-            node, parent = queue.popleft()
-            tree = nltk.Tree(str(node), [])
-            parent.append(tree)
-            if len(node.children) > 0:
-                queue += [(c, tree) for c in node.children]
-        root.draw()
+    def copy(self):
+        return AndNode(
+            self.node_id,
+            self.treename,
+            self.word,
+            self.pos1,
+            self.position,
+            self.word_pos,
+            self.node_type,
+            self.parent_pos,
+            self.children,
+        )
 
     def is_leaf(self):
         return len(self.children) == 0
@@ -177,23 +213,37 @@ class AndNode(Node):
     def is_pair(self, o):
         return self.treename == o.treename and self.word == o.word and self.pos1 == o.pos1
 
+    def is_start(self):
+        return self.node_id == 'start'
+
     def count_derivations(self):
         if self.is_leaf():
             return 1
         return prod([c.count_derivations() for c in self.children])
 
     def deriv_trees(self):
-        location = self.parent_pos #if "alpha" in self.treename else self.pos1
+        if self.is_start():
+            return [d[0] for d in self.children[0].deriv_trees()]
+
+        location = self.parent_pos
         if self.is_leaf():
-            return [DerivationNode(self.treename, self.word, location, node_type=self.node_type)]
+            d = DerivationNode(self.treename, self.word, location, node_type=self.node_type)
+            derivs = [[d]]
+            return derivs
 
         derivs = []
         child_derivs = [c.deriv_trees() for c in self.children]
         product = [list(d) for d in itertools.product(*child_derivs)]
+        product = [flatten(p) for p in product]
+
+        if self.node_type == 'internal':
+            return product
+
         for c_deriv in product:
             deriv = DerivationNode(self.treename, self.word, location, children=c_deriv, node_type=self.node_type)
-            derivs.append(deriv)
+            derivs.append([deriv])
 
+        self.derivs = derivs
         return derivs
 
     def collapse_nodes(self, parent=None):
@@ -216,26 +266,10 @@ class AndNode(Node):
         elif parent.word == 'nil' and self.node_type == 'initroot':
             parent.replace(self)
             return children, has_root_child
-
-        # This is annoying case where there are multiple possible adjunctions happening on a bottom node
-        # This causes the top node, followed by the OR node, followed by the bottom options
-        # When this is the case, we just want to replace the top node with the OR node
-        # but there is not a nice way to do that on the OR node, so must do here
-        elif len(children) == 1 and isinstance(children[0], OrNode) and children[0].children[0].treename == self.treename and children[0].children[0].node_type not in ['initroot', 'auxroot'] and self.position == 'top' and children[0].children[0].position == 'bot':
-            for gc in children[0].children:
-                gc.parent_pos = self.parent_pos
-            
-            return children, has_root_child
-
         elif parent.treename == self.treename and self.node_type in ['internal', 'auxfoot']:
             return children, has_root_child
         else:
             return [self], has_root_child
-
-    def two_or_children(self):
-        if self.is_leaf():
-            return False
-        return (len(self.children) == 2 and all([isinstance(c, OrNode) for c in self.children])) or any([c.two_or_children() for c in self.children])
 
     def replace(self, other):
         self.node_id = other.node_id
@@ -256,14 +290,60 @@ class AndNode(Node):
         return "%s{%s}<%s/%s><%s>" % (self.treename, self.word, self.pos1, self.position, self.node_type)
 
 class DerivationNode(nltk.Tree):
-    def __init__(self, treename, word, location, children=None, node_type=None):
+    def __init__(self, treename, word, location, children=None, node_type=None, _parse_tree=None):
         self.treename = treename
         self.word = word
         self.location = location
         self.node_type = node_type
+        self._parse_tree = _parse_tree
+
         if children is None:
             children = []
         nltk.Tree.__init__(self, str(self), children)
+
+    def find(self, label):
+        return [s for s in self.subtrees() if s.label() == label][0]
+
+    def remove_internal(self):
+        return self._remove_internal()[0]
+
+    def _remove_internal(self):
+        if self.node_type == 'internal':
+            children = [gc for c in self for gc in c._remove_internal()]
+            return children
+
+        new_node = DerivationNode(self.treename, self.word, self.location, [], self.node_type, self._parse_tree)
+        for c in self:
+            for n in c._remove_internal():
+                new_node.append(n)
+        return [new_node]
+
+    def parse_tree(self, depth=0):
+        #if self._parse_tree is not None:
+        #    return self._parse_tree.copy()
+
+        tree = XTAG_GRAMMAR.get(self.treename)
+        tree.lexicalize(self.word)
+
+        for s in tree.subtrees():
+            s.deriv_depth = depth
+
+        for c in self:
+            c_parse = c.parse_tree(depth+1)
+
+            if 'alpha' in c.treename:
+                sub_nodes = [s for s in tree.subst_nodes() if s.original_label() == c.location and s.deriv_depth == depth]
+                assert len(sub_nodes) == 1
+                sub_node = sub_nodes[0]
+                tree.substitute(c_parse, sub_node.label())
+            elif 'beta' in c.treename:
+                adj_nodes = [s for s in tree.subtrees() if s.original_label() == c.location and s.deriv_depth == depth]
+                assert len(adj_nodes) == 1
+                adj_node = adj_nodes[0]
+                tree.adjoin(c_parse, adj_node.label())
+
+        self._parse_tree = tree
+        return tree
 
     def __str__(self):
         return "%s[%s]<%s>%s" % (self.treename, self.word, self.location, self.node_type)
@@ -271,18 +351,100 @@ class DerivationNode(nltk.Tree):
     def __repr__(self):
         return str(self)
 
+class SpanSet(object):
+    def __init__(self):
+        self.spans = set()
+        self.weights = {}
+
+    def add(self, span, weight):
+        if span in self.weights:
+            self.weights[span] = max(self.weights[span], weight)
+        else:
+            self.weights[span] = weight
+        self.spans.add(span)
+
+    def total_weight(self):
+        return sum(self.weights.values())
+
+    def difference_weight(self, other_spanset):
+        spandiff = self.spans - other_spanset.spans
+        return sum([self.weights[s] for s in spandiff])
+
+class Scorer(object):
+
+    @classmethod
+    def subtrees_with_depth(cls, tree):
+        subtrees = []
+        cls._subtrees_with_depth(tree, 0, subtrees)
+        return subtrees
+
+    @classmethod
+    def _subtrees_with_depth(cls, tree, depth, subtrees):
+        if not isinstance(tree, nltk.Tree):
+            return
+
+        subtrees.append((depth, tree))
+        for c in tree:
+            cls._subtrees_with_depth(c, depth + 1, subtrees)
+
+    @classmethod
+    def get_span_set(cls, tree):
+        spanset = SpanSet()
+        height = tree.height()
+        for depth, subtree in cls.subtrees_with_depth(tree):
+            span = subtree.leaves()
+            span = [l for l in span if 'epsilon' not in l and 'PRO' not in l]
+            if len(span) >= 2:
+                span = tuple(span)
+                s_height = subtree.height()
+                spanset.add(span, (height - depth) / height)
+        return spanset
+
+    @classmethod
+    def fscore_distance(cls, tree1, tree2):
+        spanset1 = cls.get_span_set(tree1)
+        spanset2 = cls.get_span_set(tree2)
+
+        precision = 1 - spanset1.difference_weight(spanset2) / spanset1.total_weight()
+        recall = 1 - spanset2.difference_weight(spanset1) / spanset2.total_weight()
+
+        if precision + recall == 0:
+            return 0
+
+        fscore = 2 * precision * recall / (precision + recall)
+        return fscore
+
 if __name__ == '__main__':
-    filename = '../test/treebank.output'
-    #filename = '../test/chased.output'
+    #filename = '../test/treebank.output'
+    filename = '../test/chased.output'
     #filename = '../test/chased_simple.output'
     s = DerivationForestParser.fromfile(filename)
     print(s.count_derivations())
     s = s.collapse_nodes()
-    #n = s.find("betaN0nx0Ax1{old}<NP_r/top><auxroot>")
     #import code; code.interact(local=locals())
     print(s.count_derivations())
-    print(len(s.deriv_trees()))
+    #print(len(s.deriv_trees()))
     #s.draw()
-    s.deriv_trees()[0].draw()
-    #s = s.collapse_nodes()
-    #d[0].draw()
+
+    #s.deriv_trees()[0].draw()
+    #print(s.deriv_trees()[0])
+    gold = nltk.Tree.fromstring("(S (NP (NP (DT the) (NN dog)) (SBAR (WHNP (WP who)) (S (VP (VBD chased) (NP (DT the) (NN cat)))))) (VP (VBD ran)))")
+    #gold = nltk.Tree.fromstring("(S (NP (NP (NNP Pierre) (NNP Vinken)) (, ,) (ADJP (NP (CD 61) (NNS years)) (JJ old)) (, ,)) (VP (MD will) (VP (VB join) (NP (DT the) (NN board)) (PP (IN as) (NP (DT a) (JJ nonexecutive) (NN director))) (NP (NNP Nov.) (CD 29)))))")
+    deriv_trees = s.deriv_trees()
+    print(len(deriv_trees))
+    d = deriv_trees[0]
+    #d.draw()
+    #import code; code.interact(local=locals())
+
+    parse_trees = []
+    for i, d in enumerate(deriv_trees):
+        print(i)
+        try:
+            parse_trees.append(d.parse_tree())
+        except AssertionError:
+            print(i)
+            d.draw()
+    print('done getting parse trees')
+
+    p = max(parse_trees, key=lambda p: Scorer.fscore_distance(gold, p))
+    p.draw()

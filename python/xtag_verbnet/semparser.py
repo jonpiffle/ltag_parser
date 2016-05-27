@@ -1,4 +1,4 @@
-from semantics import Semantics, Relation, Variable, Constant, Token, AndVariable, OrVariable
+from xtag_verbnet.semantics import Semantics, Relation, Variable, Constant, Token, AndVariable, OrVariable
 
 class SemanticParser(object):
     @classmethod

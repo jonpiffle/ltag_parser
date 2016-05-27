@@ -3,8 +3,8 @@ import os, pickle, re
 from collections import defaultdict
 from nltk.corpus.reader.verbnet import VerbnetCorpusReader
 
-from vnet_constants import DATA_DIR
-from semantics import Semantics, VariableFactory
+from xtag_verbnet.vnet_constants import DATA_DIR
+from xtag_verbnet.semantics import Semantics, VariableFactory
 
 class VerbNet(object):
     """

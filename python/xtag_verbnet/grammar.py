@@ -2,8 +2,8 @@ import pickle, os, xmltodict
 
 from collections import defaultdict
 
-from vnet_constants import DATA_DIR
-from tagtree import TAGTree
+from xtag_verbnet.vnet_constants import DATA_DIR
+from xtag_verbnet.tagtree import TAGTree
 
 class Grammar(object):
     """

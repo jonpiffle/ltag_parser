@@ -5,7 +5,7 @@ from nltk.corpus.reader import CategorizedBracketParseCorpusReader, PropbankCorp
 from nltk.corpus.util import LazyCorpusLoader
 from nltk.corpus import propbank
 
-from vnet_constants import DATA_DIR
+from xtag_verbnet.vnet_constants import DATA_DIR
 
 class Propbank(object):
     """

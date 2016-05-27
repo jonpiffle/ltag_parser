@@ -3,7 +3,7 @@ import nltk, copy
 from collections import defaultdict
 from nltk.featstruct import FeatStruct
 
-from semantics import Semantics, Variable, VariableBinding, CompoundVariable
+from xtag_verbnet.semantics import Semantics, Variable, VariableBinding, CompoundVariable
 
 class TAGTree(nltk.ParentedTree):
     """

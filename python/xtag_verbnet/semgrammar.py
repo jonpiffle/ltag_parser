@@ -2,13 +2,13 @@ import inflection
 
 from collections import defaultdict
 
-from grammar import Grammar
-from verbnet import VerbNet, XTAGMapper
-from propbank import Propbank
-from derivation import DerivationTree
-from semantics import Semantics, VariableFactory, Constant, Relation, Token, Variable
-from tagtree import SemTree
-from semparser import SemanticParser, VariableParser
+from xtag_verbnet.grammar import Grammar
+from xtag_verbnet.verbnet import VerbNet, XTAGMapper
+from xtag_verbnet.propbank import Propbank
+from xtag_verbnet.derivation import DerivationTree
+from xtag_verbnet.semantics import Semantics, VariableFactory, Constant, Relation, Token, Variable
+from xtag_verbnet.tagtree import SemTree
+from xtag_verbnet.semparser import SemanticParser, VariableParser
 
 class SemTreeGrammar(object):
     """

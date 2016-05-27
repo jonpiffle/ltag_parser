@@ -8,7 +8,7 @@
 #
 
 
-from xtag.xtag_nltk.LL1 import jump_over_space
+from xtag_nltk.LL1 import jump_over_space
 from nltk.featstruct import FeatStruct
 import re
 import copy

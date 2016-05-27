@@ -11,10 +11,10 @@
 import os, nltk
 from nltk.featstruct import *
 
-from xtag.xtag_nltk.feature import *
-from xtag.xtag_nltk.tagtree import TAGTree, TAGTreeSet
+from xtag_nltk.feature import *
+from xtag_nltk.tagtree import TAGTree, TAGTreeSet
 
-import xtag.xtag_nltk.LL1 as LL1
+import xtag_nltk.LL1 as LL1
 
 ###########################################
 # LL Parser for catalog file ##############

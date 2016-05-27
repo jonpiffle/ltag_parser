@@ -16,8 +16,8 @@ from nltk.util import in_idle
 from nltk.draw.util import *
 from nltk.draw.tree import (TreeView, TreeWidget, TreeSegmentWidget)
 from nltk.featstruct import FeatStruct
-from xtag.xtag_nltk.tagtree import TAGTree, TAGTreeSet
-from xtag.xtag_nltk.grammar import Grammar
+from xtag_nltk.tagtree import TAGTree, TAGTreeSet
+from xtag_nltk.grammar import Grammar
 from tkinter import *
 from tkinter import ttk
 from math import sqrt, ceil

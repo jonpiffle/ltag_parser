@@ -1,8 +1,8 @@
 import nltk, os, pickle
-from xtag.xtag_nltk.load import get_catalog, get_file_list, get_start_feature,\
+from xtag_nltk.load import get_catalog, get_file_list, get_start_feature,\
     analyze_morph, analyze_syntax, analyze_template, make_pos_mapping,\
     parse_from_files
-from xtag.xtag_nltk.feature import remove_or_tag
+from xtag_nltk.feature import remove_or_tag
 
 class Grammar(object):
     def __init__(self, language):

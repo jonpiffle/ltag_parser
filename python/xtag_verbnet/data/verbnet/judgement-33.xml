@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE VNCLASS SYSTEM "vn_class-3.dtd">
+<VNCLASS ID="judgement-33" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vn_schema-3.xsd">
+    <MEMBERS>
+        <MEMBER name="acclaim" wn="acclaim%2:32:00"/>
+        <MEMBER name="applaud" wn="applaud%2:32:00"/>
+        <MEMBER name="bless" wn="bless%2:32:00 bless%2:40:00"/>
+        <MEMBER name="celebrate" wn="celebrate%2:41:02"/>
+        <MEMBER name="commend" wn="commend%2:32:00 commend%2:32:02"/>
+        <MEMBER name="compensate" wn="compensate%2:40:00"/>
+        <MEMBER name="compliment" wn="compliment%2:32:00 compliment%2:32:01"/>
+        <MEMBER name="congratulate" wn="congratulate%2:32:00 congratulate%2:32:01 congratulate%2:37:00 congratulate%2:32:11"/>
+        <MEMBER name="eulogize" wn="eulogize%2:32:00"/>
+        <MEMBER name="excuse" wn="excuse%2:32:01 excuse%2:32:02"/>
+        <MEMBER name="extol" wn="extol%2:32:00"/>
+        <MEMBER name="felicitate" wn="felicitate%2:32:00"/>
+        <MEMBER name="forgive" wn="forgive%2:32:00"/>
+        <MEMBER name="greet" wn="greet%2:32:00 ?greet%2:31:00"/>
+        <MEMBER name="hail" wn="hail%2:32:02"/>
+        <MEMBER name="honor" wn="honor%2:41:00 honor%2:41:01"/>
+        <MEMBER name="laud" wn="laud%2:32:00"/>
+        <MEMBER name="pardon" wn="pardon%2:32:01 pardon%2:32:00"/>
+        <MEMBER name="praise" wn="praise%2:32:00"/>
+        <MEMBER name="recompense" wn="recompense%2:40:01"/>
+        <MEMBER name="remunerate" wn="remunerate%2:40:00"/>
+        <MEMBER name="repay" wn="repay%2:40:02"/>
+        <MEMBER name="reward" wn="reward%2:40:01 reward%2:40:00"/>
+        <MEMBER name="salute" wn="salute%2:32:03"/>
+        <MEMBER name="thank" wn="thank%2:32:00"/>
+        <MEMBER name="toast" wn="toast%2:34:00"/>
+        <MEMBER name="welcome" wn="welcome%2:40:00"/>
+        <MEMBER name="abuse" wn="abuse%2:41:00 abuse%2:30:00 abuse%2:32:00"/>
+        <MEMBER name="backbite" wn="backbite%2:32:00"/>
+        <MEMBER name="calumniate" wn="calumniate%2:32:00"/>
+        <MEMBER name="castigate" wn="castigate%2:32:00"/>
+        <MEMBER name="censure" wn="censure%2:32:00"/>
+        <MEMBER name="chasten" wn="chasten%2:32:00"/>
+        <MEMBER name="chastise" wn="chastise%2:32:00"/>
+        <MEMBER name="chide" wn="chide%2:32:00"/>
+        <MEMBER name="condemn" wn="condemn%2:32:00"/>
+        <MEMBER name="criticize" wn="criticize%2:32:00 criticize%2:33:00"/>
+        <MEMBER name="decry" wn="decry%2:32:00"/>
+        <MEMBER name="defame" wn="defame%2:32:00"/>
+        <MEMBER name="denigrate" wn="denigrate%2:32:00 denigrate%2:32:01"/>
+        <MEMBER name="denounce" wn="denounce%2:32:00 denounce%2:41:00"/>
+        <MEMBER name="deprecate" wn="deprecate%2:32:01 deprecate%2:32:00"/>
+        <MEMBER name="deride" wn="deride%2:32:00"/>
+        <MEMBER name="disparage" wn="disparage%2:32:00"/>
+        <MEMBER name="fault" wn="fault%2:32:00"/>
+        <MEMBER name="fine" wn="fine%2:40:00 fine%2:41:00"/>
+        <MEMBER name="impeach" wn="impeach%2:32:03"/>
+        <MEMBER name="insult" wn="insult%2:32:00"/>
+        <MEMBER name="lambaste" wn="lambaste%2:32:00"/>
+        <MEMBER name="malign" wn="malign%2:32:00"/>
+        <MEMBER name="mock" wn="mock%2:32:00"/>
+        <MEMBER name="penalize" wn="penalize%2:41:00"/>
+        <MEMBER name="persecute" wn="persecute%2:41:00"/>
+        <MEMBER name="prosecute" wn="?prosecute%2:41:01"/>
+        <MEMBER name="punish" wn="punish%2:41:00"/>
+        <MEMBER name="rebuke" wn="rebuke%2:32:00"/>
+        <MEMBER name="reprimand" wn="reprimand%2:32:01"/>
+        <MEMBER name="reproach" wn="reproach%2:32:00"/>
+        <MEMBER name="reprove" wn="reprove%2:32:00"/>
+        <MEMBER name="revile" wn="revile%2:32:00"/>
+        <MEMBER name="ridicule" wn="ridicule%2:32:00"/>
+        <MEMBER name="scold" wn="scold%2:32:00"/>
+        <MEMBER name="scorn" wn="scorn%2:37:00"/>
+        <MEMBER name="shame" wn="shame%2:41:00 shame%2:37:00"/>
+        <MEMBER name="snub" wn="snub%2:32:01 snub%2:32:00"/>
+        <MEMBER name="upbraid" wn="upbraid%2:32:00"/>
+        <MEMBER name="victimize" wn="victimize%2:41:01 victimize%2:41:00"/>
+        <MEMBER name="vilify" wn="vilify%2:32:00"/>
+        <MEMBER name="approve" wn="approve%2:32:00 approve%2:31:00"/>
+    </MEMBERS>
+    <THEMROLES>
+        <THEMROLE type="Agent">
+            <SELRESTRS>
+                <SELRESTR Value="+" type="human"/>
+            </SELRESTRS>
+        </THEMROLE>
+        <THEMROLE type="Theme">
+            <SELRESTRS/>
+        </THEMROLE>
+        <THEMROLE type="Attribute">
+            <SELRESTRS/>
+        </THEMROLE>
+    </THEMROLES>
+    <FRAMES>
+        <FRAME>
+            <DESCRIPTION descriptionNumber="0.2" primary="Basic Transitive" secondary="" xtag=""/>
+            <EXAMPLES>
+                <EXAMPLE><![CDATA["They praised the volunteers"]]></EXAMPLE>
+            </EXAMPLES>
+            <SYNTAX>
+                <NP value="Agent">
+                    <SYNRESTRS/>
+                </NP>
+                <VERB/>
+                <NP value="Theme">
+                    <SYNRESTRS/>
+                </NP>
+            </SYNTAX>
+            <SEMANTICS>
+                <PRED value="have_opinion">
+                    <ARGS>
+                        <ARG type="Event" value="E"/>
+                        <ARG type="ThemRole" value="Agent"/>
+                        <ARG type="ThemRole" value="Theme"/>
+                        <ARG type="ThemRole" value="?Attribute"/>
+                    </ARGS>
+                </PRED>
+            </SEMANTICS>
+        </FRAME>
+        <FRAME>
+            <DESCRIPTION descriptionNumber="0.2" primary="Transitive" secondary="+ Cause PP" xtag=""/>
+            <EXAMPLES>
+                <EXAMPLE><![CDATA["They praised the volunteers for their dedication"]]></EXAMPLE>
+            </EXAMPLES>
+            <SYNTAX>
+                <NP value="Agent">
+                    <SYNRESTRS/>
+                </NP>
+                <VERB/>
+                <NP value="Theme">
+                    <SYNRESTRS/>
+                </NP>
+                <PREP value="for">
+                    <SELRESTRS/>
+                </PREP>
+                <NP value="Attribute">
+                    <SYNRESTRS/>
+                </NP>
+            </SYNTAX>
+            <SEMANTICS>
+                <PRED value="have_opinion">
+                    <ARGS>
+                        <ARG type="Event" value="E"/>
+                        <ARG type="ThemRole" value="Agent"/>
+                        <ARG type="ThemRole" value="Theme"/>
+                        <ARG type="ThemRole" value="Attribute"/>
+                    </ARGS>
+                </PRED>
+            </SEMANTICS>
+        </FRAME>
+        <FRAME>
+            <DESCRIPTION descriptionNumber="2.13" primary="Possessor Subject Possessor-Attribute Factoring Alternation" secondary="" xtag=""/>
+            <EXAMPLES>
+                <EXAMPLE><![CDATA["They praised the volunteer's dedication"]]></EXAMPLE>
+            </EXAMPLES>
+            <SYNTAX>
+                <NP value="Agent">
+                    <SYNRESTRS/>
+                </NP>
+                <VERB/>
+                <NP value="Theme">
+                    <SYNRESTRS>
+                        <SYNRESTR Value="+" type="genitive"/>
+                    </SYNRESTRS>
+                </NP>
+                <NP value="Attribute">
+                    <SYNRESTRS/>
+                </NP>
+            </SYNTAX>
+            <SEMANTICS>
+                <PRED value="have_opinion">
+                    <ARGS>
+                        <ARG type="Event" value="E"/>
+                        <ARG type="ThemRole" value="Agent"/>
+                        <ARG type="ThemRole" value="Theme"/>
+                        <ARG type="ThemRole" value="Attribute"/>
+                    </ARGS>
+                </PRED>
+            </SEMANTICS>
+        </FRAME>
+    </FRAMES>
+    <SUBCLASSES/>
+</VNCLASS>

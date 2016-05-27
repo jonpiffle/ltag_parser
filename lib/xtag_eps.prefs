@@ -16,4 +16,4 @@ parser_disallow_leftaux_wrapping=1
 parser_disallow_rightaux_wrapping=0
 parser_multiple_adjunctions=0
 parser_max_start_count=0
-parser_max_parse_time_allowed=240.0
+parser_max_parse_time_allowed=300.0

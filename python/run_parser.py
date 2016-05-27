@@ -320,4 +320,4 @@ def parse_wsj(processes=8):
     p.starmap(get_best_parse, sorted(params, key=lambda x: (x[0], x[1])))
 
 if __name__ == '__main__':
-    parse_wsj(2)
+    #parse_wsj(2)

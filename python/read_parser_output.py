@@ -392,42 +392,39 @@ class SpanSet(object):
         return sum([self.weights[s] for s in spandiff])
 
 class Scorer(object):
+    def __init__(self, gold):
+        self.gold = gold
+        self.gold_spanset = self.get_span_set(gold)
 
-    @classmethod
-    def subtrees_with_depth(cls, tree):
+    def subtrees_with_depth(self, tree):
         subtrees = []
-        cls._subtrees_with_depth(tree, 0, subtrees)
+        self._subtrees_with_depth(tree, 0, subtrees)
         return subtrees
 
-    @classmethod
-    def _subtrees_with_depth(cls, tree, depth, subtrees):
+    def _subtrees_with_depth(self, tree, depth, subtrees):
         if not isinstance(tree, nltk.Tree):
             return
 
         subtrees.append((depth, tree))
         for c in tree:
-            cls._subtrees_with_depth(c, depth + 1, subtrees)
+            self._subtrees_with_depth(c, depth + 1, subtrees)
 
-    @classmethod
-    def get_span_set(cls, tree):
+    def get_span_set(self, tree):
         spanset = SpanSet()
         height = tree.height()
-        for depth, subtree in cls.subtrees_with_depth(tree):
+        for depth, subtree in self.subtrees_with_depth(tree):
             span = subtree.leaves()
             span = [l for l in span if 'epsilon' not in l and 'PRO' not in l]
             if len(span) >= 2:
                 span = tuple(span)
-                s_height = subtree.height()
                 spanset.add(span, (height - depth) / height)
         return spanset
 
-    @classmethod
-    def fscore_distance(cls, tree1, tree2):
-        spanset1 = cls.get_span_set(tree1)
-        spanset2 = cls.get_span_set(tree2)
+    def fscore_distance(self, tree):
+        spanset = self.get_span_set(tree)
 
-        precision = 1 - spanset1.difference_weight(spanset2) / spanset1.total_weight()
-        recall = 1 - spanset2.difference_weight(spanset1) / spanset2.total_weight()
+        precision = 1 - self.gold_spanset.difference_weight(spanset) / self.gold_spanset.total_weight()
+        recall = 1 - spanset.difference_weight(self.gold_spanset) / spanset.total_weight()
 
         if precision + recall == 0:
             return 0
@@ -453,7 +450,8 @@ if __name__ == '__main__':
 
     #gold = nltk.Tree.fromstring("(S (NP (NP (DT the) (NN dog)) (SBAR (WHNP (WP who)) (S (VP (VBD chased) (NP (DT the) (NN cat)))))) (VP (VBD ran)))")
     gold = nltk.Tree.fromstring("(S (NP (NP (NNP Pierre) (NNP Vinken)) (, ,) (ADJP (NP (CD 61) (NNS years)) (JJ old)) (, ,)) (VP (MD will) (VP (VB join) (NP (DT the) (NN board)) (PP (IN as) (NP (DT a) (JJ nonexecutive) (NN director))) (NP (NNP Nov.) (CD 29)))))")
-    score_funct = lambda deriv_tree: Scorer.fscore_distance(gold, deriv_tree.parse_tree())
+    scorer = Scorer(gold)
+    score_funct = lambda deriv_tree: scorer.fscore_distance(deriv_tree.parse_tree())
     k = 1
     heap_fact = KHeapFactory(k, score_funct)
     deriv_trees = s.deriv_trees(heap_fact)

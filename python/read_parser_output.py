@@ -24,7 +24,14 @@ class KHeapFactory(object):
         self.key = key
 
     def new_heap(self, initial=None):
+        if len(initial) < k:
+            return initial
         return KHeap(self.k, initial, self.key)
+
+    def new_higher_order_heap(self, initial=None, f=sum):
+        if len(initial) < k:
+            return initial
+        return KHeap(self.k, initial, key=lambda lst: f([self.key(x) for x in lst]))
 
 class KHeap(collections.MutableSequence):
     def __init__(self, k=1, initial=None, key=lambda x: x):
@@ -63,9 +70,9 @@ class KHeap(collections.MutableSequence):
 
 class DerivationForestParser(object):
     @classmethod
-    def fromstring(cls, node_id, node_str_dict, node_dict, parent_pos=""):
-        #if node_id in node_dict:
-        #    return node_dict[node_id]
+    def fromstring(cls, node_id, node_str_dict, node_dict):
+        if node_id in node_dict:
+            return node_dict[node_id]
 
         node_string = node_str_dict[node_id]
         split = node_string.split()
@@ -82,27 +89,26 @@ class DerivationForestParser(object):
         pos1, position = pos1.split("/")
 
         # parse children
-
         dtr_or_list = []
         dtr_or_label_list = cls.dtr_or_list_fromstring(dtr_string)
         for label_list in dtr_or_label_list:
-            child_list = [DerivationForestParser.fromstring(c_id, node_str_dict, node_dict, parent_pos=pos1) for c_id in label_list]
+            child_list = [DerivationForestParser.fromstring(c_id, node_str_dict, node_dict) for c_id in label_list]
             dtr_or_list.append(child_list)
 
         if len(dtr_or_list) == 0:
-            node = AndNode(node_id, treename, word, pos1, position, word_pos, node_type, parent_pos, [])
+            node = AndNode(node_id, treename, word, pos1, position, word_pos, node_type, [])
         elif len(dtr_or_list) == 1:
-            node = AndNode(node_id, treename, word, pos1, position, word_pos, node_type, parent_pos, dtr_or_list[0])
+            node = AndNode(node_id, treename, word, pos1, position, word_pos, node_type, dtr_or_list[0])
         else:
             and_nodes = []
             for and_list in dtr_or_list:
-                and_node = AndNode(node_id + ",".join([c.node_id for c in and_list]), treename, word, pos1, position, word_pos, node_type, parent_pos, and_list)
+                and_node = AndNode(node_id + ",".join([c.node_id for c in and_list]), treename, word, pos1, position, word_pos, node_type, and_list)
                 and_nodes.append(and_node)
             node = OrNode(node_id, and_nodes)
 
         ### Need to fix this at some point to enable full structure sharing.  ###
         ### The problem is that we're copying the and node many times, so each has the same id ###
-        #node_dict[node.node_id] = node
+        node_dict[node.node_id] = node
         return node
 
     @classmethod
@@ -136,10 +142,10 @@ class DerivationForestParser(object):
                 node_id = re.match(r"(.*?):", line).group(1)
                 node_str_dict[node_id] = line
 
-        children = [DerivationForestParser.fromstring(c_id, node_str_dict, {}, "") for c_id in start_children]
+        children = [DerivationForestParser.fromstring(c_id, node_str_dict, {}) for c_id in start_children]
         if len(children) > 1:
             children = [OrNode('startor', children)]
-        start_node = AndNode('start', '', '', '', '', '', 'initroot', '', children)
+        start_node = AndNode('start', '', '', '', '', 'initroot', '', children)
         return start_node
 
 class Node(object):
@@ -164,6 +170,16 @@ class Node(object):
             queue += [c for c in node.children]
         return found
 
+    def find_by_treename(self, label):
+        found = []
+        queue = deque([self])
+        while len(queue) > 0:
+            node = queue.popleft()
+            if node.treename == label:
+                found.append(node)
+            queue += [c for c in node.children]
+        return found
+
     def find_by_type(self, node_type):
         found = []
         queue = deque([self])
@@ -184,6 +200,15 @@ class Node(object):
             queue += [c for c in node.children]
         return found
 
+    def unique_nodes(self):
+        found = set()
+        queue = deque([self])
+        while len(queue) > 0:
+            node = queue.popleft()
+            found.add(node)
+            queue += set(node.children) - found
+        return found
+
     def __repr__(self):
         return str(self)
 
@@ -196,9 +221,12 @@ class OrNode(Node):
         self.word = ''
         self.node_id = node_id
 
-    def deriv_trees(self, heap_fact):
-        child_derivs = [c.deriv_trees(heap_fact) for c in self.children]
-        return flatten(child_derivs)
+    def deriv_trees(self, heap_fact=None, parent=None):
+        child_derivs = [c.deriv_trees(heap_fact=heap_fact, parent=parent) for c in self.children]
+        child_derivs = flatten(child_derivs)
+        deriv_heap = heap_fact.new_higher_order_heap(child_derivs)
+        child_derivs = [c for c in deriv_heap]
+        return child_derivs
 
     def count_derivations(self):
         return sum([c.count_derivations() for c in self.children])
@@ -218,7 +246,7 @@ class OrNode(Node):
         return "OR"
 
 class AndNode(Node):
-    def __init__(self, node_id, treename, word, pos1, position, word_pos, node_type, parent_pos, children):
+    def __init__(self, node_id, treename, word, pos1, position, word_pos, node_type, children):
         self.node_id = node_id
         self.treename = treename
         self.word = word
@@ -226,7 +254,6 @@ class AndNode(Node):
         self.position = position
         self.word_pos = word_pos
         self.node_type = node_type
-        self.parent_pos = parent_pos
         self.children = children
         self.derivs = None
 
@@ -239,7 +266,6 @@ class AndNode(Node):
             self.position,
             self.word_pos,
             self.node_type,
-            self.parent_pos,
             self.children,
         )
 
@@ -266,35 +292,50 @@ class AndNode(Node):
             return 1
         return prod([c.count_derivations() for c in self.children])
 
-    def deriv_trees(self, heap_fact=None):
+    def deriv_trees(self, heap_fact=None, parent=None):
+        if self.derivs is not None:
+            new_deriv_list = []
+            for deriv_list in self.derivs:
+                new_derivs = [] 
+                for deriv in deriv_list:
+                    new_deriv = deriv.copy()
+                    new_deriv.location = parent.pos1
+                    new_derivs.append(new_deriv)
+                new_deriv_list.append(new_derivs)
+            return new_deriv_list
+
         if self.is_start():
-            derivs = [d[0] for d in self.children[0].deriv_trees(heap_fact)]
+            derivs = self.children[0].deriv_trees(heap_fact=heap_fact, parent=self)
+            derivs = [d[0] for d in derivs]
             return derivs
 
-        location = self.parent_pos
-        if self.is_leaf():
-            d = DerivationNode(self.treename, self.word, location, node_type=self.node_type)
-            derivs = [[d]]
-            return derivs
-
-        derivs = []
-        child_derivs = [c.deriv_trees(heap_fact) for c in self.children]
+        child_derivs = [c.deriv_trees(heap_fact, self) for c in self.children]
         product = [list(d) for d in itertools.product(*child_derivs)]
         product = [flatten(p) for p in product]
 
-        if self.node_type == 'internal':
-            return product
+        if self.node_type not in ['initroot', 'auxroot']:
+            deriv_heap = heap_fact.new_higher_order_heap(product)
+            return [d for d in deriv_heap]
 
-        for c_deriv in product:
-            deriv = DerivationNode(self.treename, self.word, location, children=c_deriv, node_type=self.node_type)
-            derivs.append(deriv)
+        location = parent.pos1
+        if len(product) == 0:
+            d = DerivationNode(self.treename, self.word, location, node_type=self.node_type)
+            derivs = [[d]]
+        else:
+            derivs = []
+            for c_deriv in product:
+                deriv = DerivationNode(self.treename, self.word, location, children=c_deriv, node_type=self.node_type)
+                derivs.append(deriv)
+
         deriv_heap = heap_fact.new_heap(derivs)
         derivs = [[d] for d in deriv_heap]
+
         self.derivs = derivs
         return derivs
 
     def collapse_nodes(self, parent=None):
         children = [c.collapse_nodes(self) for c in self.children]
+
         if len(children) > 0:
             children, child_has_root_list = zip(*[(clist, c_has_root_child) for clist, c_has_root_child in children])
             children = [c for clist in children for c in clist]
@@ -326,7 +367,6 @@ class AndNode(Node):
         self.position = other.position
         self.word_pos = other.word_pos
         self.node_type = other.node_type
-        self.parent_pos = other.parent_pos
         self.children = other.children
         return self
 
@@ -383,6 +423,17 @@ class DerivationNode(nltk.Tree):
         self._parse_tree = tree
         return tree
 
+    def copy(self):
+        return DerivationNode(
+            self.treename, 
+            self.word,
+            self.location,
+            children=[c.copy() for c in self],
+            node_type=self.node_type,
+            _parse_tree=self._parse_tree,
+            _deriv_depth=self._deriv_depth
+        )
+
     def __str__(self):
         return "%s[%s]<%s>%s" % (self.treename, self.word, self.location, self.node_type)
 
@@ -402,7 +453,7 @@ class SpanSet(object):
         self.spans.add(span)
 
     def total_weight(self):
-        return sum(self.weights.values())
+        return sum(self.weights.values()) + 1
 
     def difference_weight(self, other_spanset):
         spandiff = self.spans - other_spanset.spans
@@ -453,38 +504,41 @@ class Scorer(object):
         return fscore
 
 if __name__ == '__main__':
-    filename = '../test/treebank.output'
+    filename = 'revised_parser_output/0001_0.txt'
     #filename = '../test/chased.output'
     #filename = '../test/chased_simple.output'
     s = DerivationForestParser.fromfile(filename)
+    #orig_deriv = s.count_derivations()
+    #s = s.collapse_nodes()
+    #assert s.count_derivations() == orig_deriv
+    print(len(s.unique_nodes()))
+
+    #alphap_nodes = set(s.find_by_treename("alphaP"))
+    #print(len(alphap_nodes))
+
     print(s.count_derivations())
-    s = s.collapse_nodes()
-    #import code; code.interact(local=locals())
-    print(s.count_derivations())
-    #print(len(s.deriv_trees()))
     #s.draw()
 
-    #s.deriv_trees()[0].draw()
-    #print(s.deriv_trees()[0])
     #gold = nltk.Tree.fromstring("(S (NP (NP (DT the) (NN dog)) (SBAR (WHNP (WP who)) (S (VP (VBD chased) (NP (DT the) (NN cat)))))) (VP (VBD ran)))")
     gold = nltk.Tree.fromstring("(S (NP (NP (NNP Pierre) (NNP Vinken)) (, ,) (ADJP (NP (CD 61) (NNS years)) (JJ old)) (, ,)) (VP (MD will) (VP (VB join) (NP (DT the) (NN board)) (PP (IN as) (NP (DT a) (JJ nonexecutive) (NN director))) (NP (NNP Nov.) (CD 29)))))")
     score_funct = lambda deriv_tree: Scorer.fscore_distance(gold, deriv_tree.parse_tree())
-    k = 10
+    k = 1
     heap_fact = KHeapFactory(k, score_funct)
     deriv_trees = s.deriv_trees(heap_fact)
+    #deriv_trees = s.deriv_trees(None)
     #import code; code.interact(local=locals())
 
     print(len(deriv_trees))
-    d = deriv_trees[0]
-    #d.draw()
-    #import code; code.interact(local=locals())
 
     parse_trees = []
     for i, d in enumerate(deriv_trees):
         print(i)
-        parse_trees.append(d.parse_tree())
+        p = d.parse_tree()
+        parse_trees.append(p)
+        #d.draw()
+        #p.draw()
     print('done getting parse trees')
 
-    d = max(deriv_trees, key=lambda deriv_tree: Scorer.fscore_distance(gold, deriv_tree.parse_tree()))
-    d.draw()
-    d.parse_tree().draw()
+    #d = max(deriv_trees, key=lambda deriv_tree: Scorer.fscore_distance(gold, deriv_tree.parse_tree()))
+    #d.draw()
+    #d.parse_tree().draw()

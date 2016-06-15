@@ -106,8 +106,6 @@ class DerivationForestParser(object):
                 and_nodes.append(and_node)
             node = OrNode(node_id, and_nodes)
 
-        ### Need to fix this at some point to enable full structure sharing.  ###
-        ### The problem is that we're copying the and node many times, so each has the same id ###
         node_dict[node.node_id] = node
         return node
 
@@ -224,23 +222,11 @@ class OrNode(Node):
     def deriv_trees(self, heap_fact=None, parent=None):
         child_derivs = [c.deriv_trees(heap_fact=heap_fact, parent=parent) for c in self.children]
         child_derivs = flatten(child_derivs)
-        deriv_heap = heap_fact.new_higher_order_heap(child_derivs)
-        child_derivs = [c for c in deriv_heap]
+        child_derivs = [c for c in heap_fact.new_higher_order_heap(child_derivs)]
         return child_derivs
 
     def count_derivations(self):
         return sum([c.count_derivations() for c in self.children])
-
-    def collapse_nodes(self, parent):
-        has_root_child = False
-        children = [c.collapse_nodes(self) for c in self.children]
-        if len(children) > 0:
-            children, child_has_root_list = zip(*[(clist, c_has_root_child) for clist, c_has_root_child in children])
-            children = [c for clist in children for c in clist]
-            self.children = children
-            has_root_child = any(child_has_root_list)
-        self.children = children
-        return [self], has_root_child
 
     def __str__(self):
         return "OR"
@@ -256,18 +242,6 @@ class AndNode(Node):
         self.node_type = node_type
         self.children = children
         self.derivs = None
-
-    def copy(self):
-        return AndNode(
-            self.node_id,
-            self.treename,
-            self.word,
-            self.pos1,
-            self.position,
-            self.word_pos,
-            self.node_type,
-            self.children,
-        )
 
     def is_leaf(self):
         return len(self.children) == 0
@@ -292,17 +266,20 @@ class AndNode(Node):
             return 1
         return prod([c.count_derivations() for c in self.children])
 
+    def copy_deriv_trees_with_label(self, derivs, label):
+        new_deriv_list = []
+        for deriv_list in derivs:
+            new_derivs = [] 
+            for deriv in deriv_list:
+                new_deriv = deriv.copy()
+                new_deriv.location = label
+                new_derivs.append(new_deriv)
+            new_deriv_list.append(new_derivs)
+        return new_deriv_list
+
     def deriv_trees(self, heap_fact=None, parent=None):
         if self.derivs is not None:
-            new_deriv_list = []
-            for deriv_list in self.derivs:
-                new_derivs = [] 
-                for deriv in deriv_list:
-                    new_deriv = deriv.copy()
-                    new_deriv.location = parent.pos1
-                    new_derivs.append(new_deriv)
-                new_deriv_list.append(new_derivs)
-            return new_deriv_list
+            return self.copy_deriv_trees_with_label(self.derivs, parent.pos1)
 
         if self.is_start():
             derivs = self.children[0].deriv_trees(heap_fact=heap_fact, parent=self)
@@ -314,61 +291,16 @@ class AndNode(Node):
         product = [flatten(p) for p in product]
 
         if self.node_type not in ['initroot', 'auxroot']:
-            deriv_heap = heap_fact.new_higher_order_heap(product)
-            return [d for d in deriv_heap]
+            return [d for d in heap_fact.new_higher_order_heap(product)] # if no heap, just return product
 
-        location = parent.pos1
         if len(product) == 0:
-            d = DerivationNode(self.treename, self.word, location, node_type=self.node_type)
-            derivs = [[d]]
+            derivs = [DerivationNode(self.treename, self.word, parent.pos1, node_type=self.node_type)]
         else:
-            derivs = []
-            for c_deriv in product:
-                deriv = DerivationNode(self.treename, self.word, location, children=c_deriv, node_type=self.node_type)
-                derivs.append(deriv)
+            derivs = [DerivationNode(self.treename, self.word, parent.pos1, children=c_deriv, node_type=self.node_type) for c_deriv in product]
 
-        deriv_heap = heap_fact.new_heap(derivs)
-        derivs = [[d] for d in deriv_heap]
-
+        derivs = [[d] for d in heap_fact.new_heap(derivs)]
         self.derivs = derivs
         return derivs
-
-    def collapse_nodes(self, parent=None):
-        children = [c.collapse_nodes(self) for c in self.children]
-
-        if len(children) > 0:
-            children, child_has_root_list = zip(*[(clist, c_has_root_child) for clist, c_has_root_child in children])
-            children = [c for clist in children for c in clist]
-            self.children = children
-            has_root_child = self.node_type in ['initroot', 'auxroot'] or any(child_has_root_list)
-        else:
-            has_root_child = self.node_type in ['initroot', 'auxroot']
-
-        if parent is None:
-            return self
-
-        if not has_root_child:
-            return [], False
-        elif self.treename == parent.treename and self.node_type not in ['initroot', 'auxroot'] and parent.position == 'top' and self.position == 'bot':
-            return children, has_root_child
-        elif parent.word == 'nil' and self.node_type == 'initroot':
-            parent.replace(self)
-            return children, has_root_child
-        elif parent.treename == self.treename and self.node_type in ['internal', 'auxfoot']:
-            return children, has_root_child
-        else:
-            return [self], has_root_child
-
-    def replace(self, other):
-        self.node_id = other.node_id
-        self.treename = other.treename
-        self.word = other.word
-        self.pos1 = other.pos1
-        self.position = other.position
-        self.word_pos = other.word_pos
-        self.node_type = other.node_type
-        self.children = other.children
-        return self
 
     def __repr__(self):
         return str(self)

@@ -452,7 +452,7 @@ if __name__ == '__main__':
     gold = nltk.Tree.fromstring("(S (NP (NP (NNP Pierre) (NNP Vinken)) (, ,) (ADJP (NP (CD 61) (NNS years)) (JJ old)) (, ,)) (VP (MD will) (VP (VB join) (NP (DT the) (NN board)) (PP (IN as) (NP (DT a) (JJ nonexecutive) (NN director))) (NP (NNP Nov.) (CD 29)))))")
     scorer = Scorer(gold)
     score_funct = lambda deriv_tree: scorer.fscore_distance(deriv_tree.parse_tree())
-    k = 1
+    k = 2
     heap_fact = KHeapFactory(k, score_funct)
     deriv_trees = s.deriv_trees(heap_fact)
     #deriv_trees = s.deriv_trees(None)
